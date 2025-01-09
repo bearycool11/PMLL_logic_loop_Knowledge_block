@@ -257,7 +257,9 @@ pub fn instantiate(
         retirement_plan: "401(k) with 5% company match".to_string(),
         professional_stipend: 10000,
         bitcoin_wallet: "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d".to_string(),
-        cosmos_wallet: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd".to_string(),
+        cosmos_wallet: "{ "cosmos_wallet": "archway1qs2qnjvzlkgt0gpekr2c3pld0eu3tq8yw2kwgc"
+}
+".to_string(),
     };
 
     deps.storage.set(b"employee_details", &to_binary(&data)?);
