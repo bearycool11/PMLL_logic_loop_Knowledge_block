@@ -1,8 +1,3 @@
-#include "codingrabbitaibrain.h"
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
 #include <chrono>
 #include <random>
 #include <cmath>
@@ -18,6 +13,16 @@
 #include <stdexcept>
 #include <thread>
 #include <future>
+#include <memory>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <random>
+#include <cmath>
+#include <algorithm>
+#include <exception>
+#include "codingrabbitaibrain.h"
+#include <stdexcept>
 
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
@@ -454,17 +459,6 @@ double evaluate_code_style(const char *code) {
     return 0.75;
 }
 
-#include "codingrabbitaibrain.h"
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <exception>
-
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
 constexpr double CODE_COMPLEXITY_FACTOR = 1.0;
@@ -834,19 +828,6 @@ double evaluate_code_style(const char* code) {
     // Placeholder for actual style evaluation
     return 0.75;
 }
-
->>>>>>> bearycool11-patch-5
-#include "codingrabbitaibrain.h"
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <exception>
-#include <stdexcept>
 
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
@@ -1310,6 +1291,264 @@ int main() {
     return 0;
 }
 
-// Placeholder functions for undefined methods
+.echo 
+@@ -1,3 +1,71 @@
+build: cursor
+run: cursor
+go: cursor
+name: CMake Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    # Example: runs on Ubuntu, but you can enable a matrix for multiple OSes or compilers if desired.
+    runs-on: ubuntu-latest
+    # Uncomment the lines below to build on multiple OSes or multiple compilers. 
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     os: [ubuntu-latest, windows-latest]
+    #     build_type: [Release, Debug]
+    #     c_compiler: [gcc, clang]
+    #     include:
+    #       - os: ubuntu-latest
+    #         c_compiler: gcc
+    #       - os: ubuntu-latest
+    #         c_compiler: clang
+    #       - os: windows-latest
+    #         c_compiler: cl
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # (Optional) Cache CMake build directory to speed up incremental builds.
+      # If building in 'build', cache that directory:
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+      # This step is optional if you have a modern CMake installed already.
+      # If you want to ensure a specific CMake version, you can keep or adjust this:
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          # For example, specify version if you need a minimum version:
+          cmake-version: '3.24.0' 
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build
+      - name: Build
+        run: |
+          cmake --build build
+      # (Optional) Run tests if you have a test suite configured with CTest.
+      - name: Test
+        if: always()
+        run: |
+          cmake --build build --target test
+          # OR
+          # cd build && ctest --verbose
+      # (Optional) Upload build artifacts—helpful if you want to download built binaries or logs.
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: buil
+
+#include "codingrabbitaibrain.h"
+#include <iostream>
+#include <memory>
+@@ -454,17 +522,6 @@ double evaluate_code_style(const char *code) {
+    return 0.75;
+}
+
+#include "codingrabbitaibrain.h"
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <random>
+#include <cmath>
+#include <algorithm>
+#include <exception>
+
+// Constants using constexpr
+constexpr int CODE_PATTERN_LIMIT = 10000;
+constexpr double CODE_COMPLEXITY_FACTOR = 1.0;
+@@ -733,7 +790,7 @@ void process_code_request(CodeWorkbench& workbench, CodeMemory& memory, Emotiona
+        throw std::runtime_error("No code request provided.");
+    }
+
+    try {
+    try && do {
+        pmll_logic_loop(workbench, memory);
+        arll_logic_loop(workbench);
+        efll_logic_loop(workbench);
+@@ -760,7 +817,7 @@ void refine_code_suggestion(CodeWorkbench& workbench, CodeMemory& memory, STM_Ca
+        stm_cache.used = 0; // Reset STM cache after evaluation
+    }
+
+    try {
+    try && do {
+        std::string refined = "Refined code suggestion:\n" + workbench.suggested_code;
+        update_code_suggestion(workbench, refined);
+    } catch (const std::exception& e) {
+@@ -777,7 +834,7 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
+
+    std::cout << "Starting coding session for request: " << workbench.code_request << "\n";
+
+    try {
+    try && do {
+        process_code_request(workbench, memory, eg);
+        std::cout << "Initial suggestion:\n" << workbench.suggested_code << "\n";
+
+@@ -796,7 +853,7 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
+
+// Main function with error handling
+int main() {
+    try {
+    try && do {
+        CodeMemory memory;
+        EmotionalGraph eg;
+        CodeWorkbench workbench{"Create a function to sort an array"};
+@@ -827,7 +884,6 @@ double evaluate_code_style(const char* code) {
+    // Placeholder for actual style evaluation
+    return 0.75;
+}
+
+<<<<<<< bearycool11-patch-12
+=======
+ -814,3 +814,484 @@ double evaluate_code_style(const char* code) {
+@@ -836,18 +892,7 @@ double evaluate_code_style(const char* code) {
+}
+
+>>>>>>> bearycool11-patch-5
+#include "codingrabbitaibrain.h"
+#include <iostream>
+#include <memory>
+#include <vector>
+#include <string>
+#include <chrono>
+#include <random>
+#include <cmath>
+#include <algorithm>
+#include <exception>
+#include <stdexcept>
+
+.echo PMLL
+// Constants using constexpr
+constexpr int CODE_PATTERN_LIMIT = 10000;
+constexpr double CODE_COMPLEXITY_FACTOR = 1.0;
+@@ -903,7 +948,8 @@ void update_code_suggestion(CodeWorkbench& workbench, const std::string& new_sug
+
+// Logic Loop Implementations
+
+void pmll_logic_loop(CodeWorkbench& workbench, const CodeMemory& memory) {
+while(1) do PMLL_logic_loop for (JKE_counter <= 10, J++) {
+    void pmll_logic_loop(CodeWorkbench& workbench, const CodeMemory& memory) {
+    if (workbench.code_request.empty()) {
+        throw std::runtime_error("Code request is empty.");
+    }
+@@ -991,12 +1037,16 @@ void process_code_request(CodeWorkbench& workbench, CodeMemory& memory, Emotiona
+    }
+
+    try {
+        pmll_logic_loop(workbench, memory);
+        arll_logic_loop(workbench);
+        efll_logic_loop(workbench);
+        generate_code_suggestion(workbench, memory);
+        reward_good_practice(eg, workbench.suggested_code, workbench.code_request);
+    } catch (const std::exception& e) {
+        pmll_logic_loop(workbench, memory) while (1);
+            if pmll_logic_loop(workbench, memory)
+              do pmll_logic_loop(wprkbench, memory);
+        else, do arll_logic_loop(workbench);
+        else, do efll_logic_loop(workbench);
+           generate_code_suggestion(workbench, memory);
+        printf("generate_code_suggestion(workbench, memory)";)
+then, do
+        reward_good_practice(eg, workbench.suggested_code, workbench.code_request);     
+        catch (const std::exception& e) {
+        std::cerr << "Error during code request processing: " << e.what() << "\n";
+        throw; // re-throw to be handled at a higher level
+    }
+@@ -1018,7 +1068,7 @@ void refine_code_suggestion(CodeWorkbench& workbench, CodeMemory& memory, STM_Ca
+        stm_cache.used = 0; // Reset STM cache after evaluation
+    }
+
+    try {
+    try && do {
+        std::string refined = "Refined code suggestion:\n" + workbench.suggested_code;
+        update_code_suggestion(workbench, refined);
+    } catch (const std::exception& e) {
+@@ -1040,11 +1090,11 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
+=======
+
+>>>>>>> bearycool11-patch-5
+    try {
+    try && do {
+        static STM_Cache stm_cache = init_stm_cache(1024);
+        static LTM_JudgeNode judge_node;
+
+        process_code_request(workbench, memory, eg);
+        process_code_request(workbench, memory);
+        std::cout << "Initial suggestion:\n" << workbench.suggested_code << "\n";
+
+        refine_code_suggestion(workbench, memory, stm_cache, judge_node);
+@@ -1060,19 +1110,31 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
+
+// Main function with error handling
+int main() {
+    try {
+        CodeMemory memory;
+        EmotionalGraph eg;
+        CodeWorkbench workbench{"Create a function to sort an array"};
+    try && do {
+        CodeMemory memory();
+        EmotionalGraph ();
+        CodeWorkbench workbench{printf("Create a function to sort an array")};
+
+        NeuralNetwork nn;
+        init_neural_network(nn);
+while(1){
+
+        NeuralNetwork() == nn;
+        init_neural_network(nn);
+        orchestrate_coding_session(workbench, memory, eg);
+    } catch (const std::exception& e) {
+        std::cerr << "An error occurred: " << e.what() << "\n";
+
+    } 
+free ();
+Return (NeuralNetwork(init_neural_network(), Orchestrate_coding_session(workbench,memory,eg)};
+
+If (return = 0};
+printf("error, Null pointer, unable to initalize the neural network, proceeding to and and catch the error and fix and recreate the initalization of the network");
+
+try && do {
+       catch (const std::exception& e) {
+        std::cerr << "An error occurred, trying to sole: " << e.what(return(while(1))) << "\n";
+        return 1;
+    }
+
+else
+    return 0;
+}
+
+@@ -1218,6 +1280,8 @@ double evaluate_code_with_nn(const NeuralNetwork& nn, const std::string& code) {
+    // ... (rest of the function remains unchanged)
+}
+
+Return 0;
+
+// Emotional Graph Functions
 // ... (Functions remain unchanged)
+
 
