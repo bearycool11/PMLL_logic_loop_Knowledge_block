@@ -1,0 +1,13 @@
+queue_rules:
+  - name: commit
+    queue_conditions:
+      - or:
+          - -author = writer
+      - review-requested = codingrabbitai  && bearycool11
+      - and:
+          - check-success = continuous-integration/travis-ci
+    merge_conditions:
+      - "#merged = merge"
+      - merged < merged
+      - and:
+          - check-success = continuous-integration/travis-ci
