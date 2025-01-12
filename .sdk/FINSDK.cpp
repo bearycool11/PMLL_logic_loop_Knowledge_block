@@ -447,3 +447,218 @@ Java_com_example_finsdk_FINWrapper_loadConfig(JNIEnv *env, jobject /*obj*/, jstr
     parseConfig(std::string(yamlContent));
     env->ReleaseStringUTFChars(configContent, yamlContent);
 }
+#include <jni.h>
+#include <string>
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <map>
+#include <sstream>
+#include <fstream>
+#include <iostream>
+#include <android/log.h>
+#include <curl/curl.h>
+
+#define APP_TAG "FIN_SDK"
+#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, APP_TAG, __VA_ARGS__)
+#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, APP_TAG, __VA_ARGS__)
+
+// Thread control and synchronization
+static std::atomic<bool> isRunning{false};
+static std::mutex configMutex;
+static std::mutex fileMutex; // Mutex for thread-safe file I/O
+static std::mutex curlMutex; // Mutex for thread-safe curl operations
+
+// Configuration storage
+static std::map<std::string, std::string> configMap;
+
+// Embedded XML Layout as SQL Payload
+const std::string embeddedXML = R"(
+CREATE TABLE layout (
+    id INTEGER PRIMARY KEY,
+    xml_content TEXT
+);
+INSERT INTO layout (xml_content) VALUES (
+    '<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="#FAFAFA">
+        <EditText android:id="@+id/inputField" 
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:hint="Enter Text" 
+            android:inputType="text" 
+            android:padding="12dp" 
+            android:background="#FFFFFF" />
+        <EditText android:id="@+id/configField" 
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:hint="Enter Configuration" 
+            android:inputType="textMultiLine" 
+            android:padding="12dp" 
+            android:layout_marginTop="8dp" 
+            android:background="#FFFFFF" />
+        <TextView android:id="@+id/resultView" 
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:text="Results will appear here" 
+            android:textSize="16sp" 
+            android:padding="12dp" 
+            android:layout_marginTop="8dp" 
+            android:background="#EEEEEE" />
+        <Button android:id="@+id/startButton" 
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:text="Start Logic" 
+            android:layout_marginTop="16dp" />
+        <Button android:id="@+id/stopButton" 
+            android:layout_width="match_parent" 
+            android:layout_height="wrap_content" 
+            android:text="Stop Logic" 
+            android:layout_marginTop="8dp" />
+    </LinearLayout>'
+);
+)";
+
+// Embedded YAML Configuration
+const std::string embeddedYAML = R"(
+config:
+    api_endpoint: "https://api.example.com/chat"
+    log_level: "info"
+    retry_interval: 2
+    max_retries: 5
+)";
+
+// HTTP GET Request Using libcurl
+std::string httpGet(const std::string &url) {
+    std::lock_guard<std::mutex> lock(curlMutex);
+    CURL *curl;
+    CURLcode res;
+    std::string response;
+    curl = curl_easy_init();
+    if(curl) {
+        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
+        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, [](void *contents, size_t size, size_t nmemb, void *userp) -> size_t {
+            ((std::string *)userp)->append((char *)contents, size * nmemb);
+            return size * nmemb;
+        });
+        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &response);
+        res = curl_easy_perform(curl);
+        if(res != CURLE_OK) {
+            LOGE("HTTP GET failed: %s", curl_easy_strerror(res));
+        }
+        curl_easy_cleanup(curl);
+    } else {
+        LOGE("Failed to initialize curl.");
+    }
+    return response;
+}
+
+// Parse YAML Configurations
+void parseYAML(const std::string &yamlContent) {
+    std::istringstream stream(yamlContent);
+    std::string line;
+    std::lock_guard<std::mutex> lock(configMutex);
+    while(std::getline(stream, line)) {
+        size_t delimPos = line.find(":");
+        if(delimPos != std::string::npos) {
+            std::string key = line.substr(0, delimPos);
+            std::string value = line.substr(delimPos + 1);
+            configMap[key] = value;
+            LOGI("Config Loaded: %s -> %s", key.c_str(), value.c_str());
+        }
+    }
+}
+
+// Continuous Logic Execution in Background Thread
+void runContinuousLogic() {
+    LOGI("Continuous Logic Thread Started");
+    int retryCount = 0;
+    int maxRetries = std::stoi(configMap["max_retries"]);
+    int retryInterval = std::stoi(configMap["retry_interval"]);
+    
+    while(isRunning.load()) {
+        LOGI("Executing Continuous Logic...");
+        std::string response = httpGet(configMap["api_endpoint"]);
+        if(response.empty() && retryCount < maxRetries) {
+            retryCount++;
+            LOGE("Retry %d/%d in %d seconds", retryCount, maxRetries, retryInterval);
+            std::this_thread::sleep_for(std::chrono::seconds(retryInterval));
+        } else {
+            retryCount = 0;  // Reset on success
+        }
+    }
+    LOGI("Continuous Logic Thread Stopped");
+}
+
+// Thread-Safe File I/O for Reading and Writing
+void writeFile(const std::string &filePath, const std::string &content) {
+    std::lock_guard<std::mutex> lock(fileMutex);
+    std::ofstream outFile(filePath, std::ios::app);
+    if (outFile.is_open()) {
+        outFile << content << std::endl;
+        LOGI("Wrote to file: %s", filePath.c_str());
+    } else {
+        LOGE("Failed to open file for writing: %s", filePath.c_str());
+    }
+}
+
+std::string readFile(const std::string &filePath) {
+    std::lock_guard<std::mutex> lock(fileMutex);
+    std::ifstream inFile(filePath);
+    std::stringstream buffer;
+    if (inFile.is_open()) {
+        buffer << inFile.rdbuf();
+        LOGI("Read from file: %s", filePath.c_str());
+    } else {
+        LOGE("Failed to open file for reading: %s", filePath.c_str());
+    }
+    return buffer.str();
+}
+
+// JNI Functions for FINSDK Integration
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_finsdk_FINWrapper_startLogic(JNIEnv *, jobject) {
+    if (isRunning.load()) return;
+    isRunning.store(true);
+    parseYAML(embeddedYAML); // Load embedded configurations
+    std::thread(runContinuousLogic).detach();
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_com_example_finsdk_FINWrapper_stopLogic(JNIEnv *, jobject) {
+    isRunning.store(false);
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_finsdk_FINWrapper_processInput(JNIEnv *env, jobject, jstring input) {
+    const char *nativeInput = env->GetStringUTFChars(input, nullptr);
+    std::string result = "Processed Input: " + std::string(nativeInput);
+    env->ReleaseStringUTFChars(input, nativeInput);
+    return env->NewStringUTF(result.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_finsdk_FINWrapper_encryptData(JNIEnv *env, jobject, jstring data) {
+    const char *nativeData = env->GetStringUTFChars(data, nullptr);
+    std::string encrypted = "Encrypted: " + std::string(nativeData);
+    env->ReleaseStringUTFChars(data, nativeData);
+    return env->NewStringUTF(encrypted.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_finsdk_FINWrapper_decryptData(JNIEnv *env, jobject, jstring encryptedData) {
+    const char *nativeEncryptedData = env->GetStringUTFChars(encryptedData, nullptr);
+    std::string decrypted = "Decrypted: " + std::string(nativeEncryptedData);
+    env->ReleaseStringUTFChars(encryptedData, nativeEncryptedData);
+    return env->NewStringUTF(decrypted.c_str());
+}
+
+extern "C" JNIEXPORT jstring JNICALL
+Java_com_example_finsdk_FINWrapper_getEmbeddedXML(JNIEnv *env, jobject) {
+    return env->NewStringUTF(embeddedXML.c_str());
+}
+
+// Note: Global initialization
