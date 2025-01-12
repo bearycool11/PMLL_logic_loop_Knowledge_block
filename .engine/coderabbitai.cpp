@@ -1666,7 +1666,182 @@ else
 
 Return 0;
 
-// Emotional Graph Functions
-// ... (Functions remain unchanged)
+// Emotional Knowledge Graph Implementation
+struct EmotionalKnowledgeNode {
+    std::string emotion;
+    double intensity;
+    double confidence;
+    std::vector<std::pair<size_t, double>> connections; // <target_node_index, weight>
+    std::unordered_map<std::string, std::string> knowledge; // Context-specific knowledge
+};
 
+class EmotionalKnowledgeGraph {
+private:
+    std::vector<EmotionalKnowledgeNode> nodes;
+    std::mutex graph_mutex;
+
+public:
+    // Add a new emotional state with associated knowledge
+    size_t add_node(const std::string& emotion, double intensity, double confidence) {
+        std::lock_guard<std::mutex> lock(graph_mutex);
+        size_t index = nodes.size();
+        nodes.push_back({emotion, intensity, confidence, {}, {}});
+        return index;
+    }
+
+    // Connect two emotional states with a weighted edge
+    void connect_nodes(size_t from, size_t to, double weight) {
+        if (from >= nodes.size() || to >= nodes.size()) {
+            throw std::out_of_range("Invalid node indices");
+        }
+        std::lock_guard<std::mutex> lock(graph_mutex);
+        nodes[from].connections.push_back({to, weight});
+    }
+
+    // Add knowledge to an emotional state
+    void add_knowledge(size_t node_index, const std::string& key, const std::string& value) {
+        if (node_index >= nodes.size()) {
+            throw std::out_of_range("Invalid node index");
+        }
+        std::lock_guard<std::mutex> lock(graph_mutex);
+        nodes[node_index].knowledge[key] = value;
+    }
+
+    // Get the most relevant emotional state for a given context
+    std::optional<EmotionalKnowledgeNode> get_relevant_emotion(const std::string& context) {
+        std::lock_guard<std::mutex> lock(graph_mutex);
+        auto max_confidence = std::max_element(
+            nodes.begin(), nodes.end(),
+            [](const EmotionalKnowledgeNode& a, const EmotionalKnowledgeNode& b) {
+                return a.confidence < b.confidence;
+            }
+        );
+        return max_confidence != nodes.end() ? 
+               std::optional<EmotionalKnowledgeNode>(*max_confidence) : 
+               std::nullopt;
+    }
+
+    // Visualize the emotional knowledge graph in GraphViz format
+    std::string visualize() const {
+        std::stringstream dot;
+        dot << "digraph EmotionalKnowledgeGraph {\n";
+        
+        // Add nodes
+        for (size_t i = 0; i < nodes.size(); ++i) {
+            const auto& node = nodes[i];
+            dot << "  node" << i << " [label=\"" << node.emotion 
+                << "\\nIntensity: " << node.intensity
+                << "\\nConfidence: " << node.confidence << "\"];\n";
+        }
+        
+        // Add edges
+        for (size_t i = 0; i < nodes.size(); ++i) {
+            for (const auto& conn : nodes[i].connections) {
+                dot << "  node" << i << " -> node" << conn.first 
+                    << " [label=\"" << conn.second << "\"];\n";
+            }
+        }
+        
+        dot << "}\n";
+        return dot.str();
+    }
+};
+
+// Final stub components
+class EngineStub {
+private:
+    EmotionalKnowledgeGraph emotion_graph;
+    std::unique_ptr<NeuralNetwork> nn;
+    std::shared_ptr<spdlog::logger> logger;
+
+public:
+    EngineStub() : nn(std::make_unique<NeuralNetwork>()) {
+        logger = spdlog::basic_logger_mt("engine_stub", "engine_stub.log");
+        logger->set_level(spdlog::level::debug);
+    }
+
+    void initialize() {
+        try {
+            logger->info("Initializing engine stub");
+            init_neural_network(*nn);
+            
+            // Initialize basic emotional states
+            auto neutral = emotion_graph.add_node("Neutral", 0.5, 1.0);
+            auto happy = emotion_graph.add_node("Happy", 0.8, 0.9);
+            auto sad = emotion_graph.add_node("Sad", 0.3, 0.9);
+            auto excited = emotion_graph.add_node("Excited", 0.9, 0.8);
+            
+            // Connect emotional states
+            emotion_graph.connect_nodes(neutral, happy, 0.7);
+            emotion_graph.connect_nodes(neutral, sad, 0.7);
+            emotion_graph.connect_nodes(happy, excited, 0.8);
+            
+            logger->info("Engine stub initialized successfully");
+        } catch (const std::exception& e) {
+            logger->error("Failed to initialize engine stub: {}", e.what());
+            throw;
+        }
+    }
+
+    void shutdown() {
+        try {
+            logger->info("Shutting down engine stub");
+            // Cleanup resources
+            nn.reset();
+            logger->info("Engine stub shutdown completed");
+        } catch (const std::exception& e) {
+            logger->error("Error during shutdown: {}", e.what());
+            throw;
+        }
+    }
+
+    // Process code with emotional awareness
+    void process_with_emotion(const std::string& code, const std::string& context) {
+        try {
+            logger->info("Processing code with emotional context");
+            
+            auto relevant_emotion = emotion_graph.get_relevant_emotion(context);
+            if (relevant_emotion) {
+                logger->info("Current emotional state: {} (intensity: {})", 
+                    relevant_emotion->emotion, relevant_emotion->intensity);
+            }
+
+            // Adjust processing based on emotional state
+            double code_quality = evaluate_code_with_nn(*nn, code);
+            logger->info("Code quality score: {}", code_quality);
+
+            // Visualize current emotional state
+            std::string graph_viz = emotion_graph.visualize();
+            logger->debug("Emotional graph state:\n{}", graph_viz);
+
+        } catch (const std::exception& e) {
+            logger->error("Error during emotional processing: {}", e.what());
+            throw;
+        }
+    }
+};
+
+// Main function update
+int main() {
+    try {
+        auto engine = std::make_unique<EngineStub>();
+        engine->initialize();
+
+        // Example usage
+        engine->process_with_emotion(
+            "void example() { return 42; }", 
+            "code_review"
+        );
+
+        engine->shutdown();
+        return 0;
+    } catch (const std::exception& e) {
+        spdlog::error("Fatal error: {}", e.what());
+        return 1;
+    }
+}
+
+printf("Rabbit ENgine, revved up, running, and pushing on in the background! How may I assist you in your coding Journey?")
+
+Return 0;
 
