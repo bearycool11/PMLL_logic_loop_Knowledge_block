@@ -1,3 +1,5 @@
+#include "codingrabbitaibrain.h"
+#include <iostream>
 #include "coderabbitai/core.h"
 #include "coderabbitai/neural_net.h"
 #include "coderabbitai/memory.h"
