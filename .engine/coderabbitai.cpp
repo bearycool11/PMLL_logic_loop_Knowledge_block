@@ -1,3 +1,7 @@
+#include "coderabbitai/core.h"
+#include "coderabbitai/neural_net.h"
+#include "coderabbitai/memory.h"
+#include "coderabbitai/error.h"
 #include <chrono>
 #include <random>
 #include <cmath>
@@ -11,18 +15,130 @@
 #include <algorithm>
 #include <exception>
 #include <stdexcept>
-#include <thread>
-#include <future>
-#include <memory>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <exception>
-#include "codingrabbitaibrain.h"
-#include <stdexcept>
+
+// Initialize logging
+void init_logging() {
+    spdlog::set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%^%l%$] [%s:%#] %v");
+    spdlog::set_level(spdlog::level::debug);
+}
+
+// Neural Network Implementation
+void init_neural_network(NeuralNetwork& nn) {
+    LOG_INFO("Initializing neural network");
+    try {
+        auto rand_double = [](std::mt19937& gen) {
+            std::uniform_real_distribution<> dis(-1.0, 1.0);
+            return dis(gen);
+        };
+
+        std::random_device rd;
+        std::mt19937 gen(rd());
+
+        nn.weights = std::vector<std::vector<double>>(NN_HIDDEN_SIZE, std::vector<double>(NN_INPUT_SIZE));
+        nn.bias = std::vector<double>(NN_HIDDEN_SIZE);
+        nn.output_weights = std::vector<std::vector<double>>(NN_OUTPUT_SIZE, std::vector<double>(NN_HIDDEN_SIZE));
+        nn.output_bias = std::vector<double>(NN_OUTPUT_SIZE);
+
+        for (auto& layer : nn.weights) {
+            std::generate(layer.begin(), layer.end(), [&]() { return rand_double(gen); });
+        }
+        std::generate(nn.bias.begin(), nn.bias.end(), [&]() { return rand_double(gen); });
+
+        LOG_INFO("Neural network initialized successfully");
+    } catch (const std::exception& e) {
+        LOG_ERROR("Neural network initialization failed: {}", e.what());
+        throw std::runtime_error("Neural network initialization failed");
+    }
+}
+
+// Code Pattern Management
+std::unique_ptr<CodePattern> create_code_pattern(const std::string& snippet, const std::string& language, double complexity) {
+    if (snippet.empty() || language.empty()) {
+        LOG_ERROR("Invalid code pattern parameters: snippet or language is empty");
+        throw std::invalid_argument("Snippet or language cannot be empty");
+    }
+
+    try {
+        auto pattern = std::make_unique<CodePattern>();
+        pattern->snippet = snippet;
+        pattern->language = language;
+        pattern->complexity = complexity;
+        
+        LOG_INFO("Created code pattern: language={}, complexity={}", language, complexity);
+        return pattern;
+    } catch (const std::exception& e) {
+        LOG_ERROR("Failed to create code pattern: {}", e.what());
+        throw;
+    }
+}
+
+void add_pattern_to_memory(CodeMemory& memory, std::unique_ptr<CodePattern>&& pattern) {
+    try {
+        if (memory.patterns.size() >= CODE_PATTERN_LIMIT) {
+            LOG_INFO("Memory limit reached, removing oldest pattern");
+            memory.patterns.erase(memory.patterns.begin());
+        }
+        memory.patterns.push_back(std::move(pattern));
+        LOG_INFO("Pattern added to memory, total patterns: {}", memory.patterns.size());
+    } catch (const std::exception& e) {
+        LOG_ERROR("Failed to add pattern to memory: {}", e.what());
+        throw;
+    }
+}
+
+// Main processing functions
+void process_code_request(CodeWorkbench& workbench, CodeMemory& memory, EmotionalGraph& eg) {
+    if (workbench.code_request.empty()) {
+        LOG_ERROR("Empty code request");
+        throw std::runtime_error("No code request provided");
+    }
+
+    try {
+        // Use async for parallel processing
+        auto pattern_match = std::async(std::launch::async, [&]() {
+            LOG_INFO("Starting pattern matching");
+            // Pattern matching logic
+        });
+
+        auto analysis = std::async(std::launch::async, [&]() {
+            LOG_INFO("Starting code analysis");
+            // Analysis logic
+        });
+
+        pattern_match.get();
+        analysis.get();
+
+        LOG_INFO("Code request processed successfully");
+    } catch (const std::exception& e) {
+        LOG_ERROR("Failed to process code request: {}", e.what());
+        ErrorRecovery::recover_from_neural_network_failure(workbench.nn);
+        throw;
+    }
+}
+
+// Main entry point
+int main() {
+    try {
+        init_logging();
+        LOG_INFO("Starting CodeRabbitAI");
+
+        CodeMemory memory;
+        EmotionalGraph eg;
+        CodeWorkbench workbench{"Create a function to sort an array"};
+
+        NeuralNetwork nn;
+        init_neural_network(nn);
+
+        process_code_request(workbench, memory, eg);
+        
+        LOG_INFO("CodeRabbitAI completed successfully");
+        return 0;
+    } catch (const std::exception& e) {
+        LOG_ERROR("Fatal error: {}", e.what());
+        return 1;
+    }
+}
+
 
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
