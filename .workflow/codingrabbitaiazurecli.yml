@@ -1,0 +1,1157 @@
+@@ -0,0 +1,1156 @@
+              - name: Attest Build Provenance
+                uses: actions/attest-build-provenance@v2.1.0
+
+name: RabbitProtocol-CI/CD
+Below is the BrainRabbit.yml file, implementing all the steps outlined in the RabbitProtocol-CI/CD workflow. It includes the full YAML configuration for GitHub Actions, along with simulated actions, logs, and outputs.
+
+BrainRabbit.yml
+
+name: BrainRabbit-CI/CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  rabbit-build:
+    name: Build Rabbit Protocol and Modular Brain Components
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-2025, macos-15]
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Setup Environment
+      - name: Setup Environment
+        run: |
+          if [[ $RUNNER_OS == 'Linux' ]]; then
+            sudo apt-get update && sudo apt-get install -y docker.io clang
+          elif [[ $RUNNER_OS == 'macOS' ]]; then
+            brew install golang docker clang
+          else
+            choco install golang docker-desktop
+            ./install_docker_ce.ps1
+          fi
+
+      # Step 3: Install Dependencies
+      - name: Install Dependencies
+        run: |
+          go mod tidy
+          go mod vendor
+
+      # Step 4: Build Modular Brain Components
+      - name: Build Modular Brain Components
+        run: |
+          gcc brain.c -o modular_brain_executable
+          gcc inner_ear.c -o inner_ear_module
+          gcc pml_logic_loop.c -o logic_module
+
+      # Step 5: Build Rabbit Protocol Components
+      - name: Build Rabbit Protocol Components
+        run: |
+          go build -o rabbit_protocol_clang cmd/main.go
+
+      # Step 6: Save Build Artifacts
+      - name: Save Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: |
+            modular_brain_executable
+            inner_ear_module
+            logic_module
+            rabbit_protocol_clang
+
+  rabbit-run:
+    name: Test Modular Brain and Rabbit Protocol
+    runs-on: ${{ matrix.os }}
+    needs: rabbit-build
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-2025, macos-15]
+
+    steps:
+      # Step 1: Checkout Code
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      # Step 2: Run Tests
+      - name: Run Tests
+        run: |
+          ./modular_brain_executable --test
+          ./logic_module --run-tests
+          ./inner_ear_module --validate
+          if [[ $RUNNER_OS == 'Linux' || $RUNNER_OS == 'macOS' ]]; then
+            docker run --rm rabbit_protocol_clang
+          else
+            docker run --rm rabbit_protocol_clang.exe
+
+  bugzap-pesterbot:
+    name: Scan and Fix Rogue Code
+    runs-on: ubuntu-latest
+    needs: rabbit-run
+
+    steps:
+      # Step 1: Scan for Rogue Code
+      - name: Scan for Rogue Code
+        run: grep -r "pesterbot" ./cmd || echo "No rogue code found"
+
+      # Step 2: Remove Rogue Code
+      - name: Remove Rogue Code
+        run: sed -i '/pesterbot/d' ./cmd/main.go
+
+  azure-pmll:
+    name: Set Up and Sync Azure PMLL
+    runs-on: ubuntu-latest
+    needs: bugzap-pesterbot
+
+    steps:
+      # Step 1: Login to Azure
+      - name: Login to Azure
+        run: |
+          az login --service-principal --username $AZURE_USER --password $AZURE_PASSWORD --tenant $AZURE_TENANT
+
+      # Step 2: Create PMLL Database
+      - name: Create Azure PMLL Database
+        run: |
+          az cosmosdb create --name ModularBrainDB --resource-group ModularBrain --locations regionName=EastUS failoverPriority=0
+          az cosmosdb sql container create --account-name ModularBrainDB --database-name GraphsDB --name KnowledgeGraphs
+          az cosmosdb sql container create --account-name ModularBrainDB --database-name GraphsDB --name EmotionalGraphs
+
+      # Step 3: Validate PMLL
+      - name: Validate PMLL
+        run: ./validate_pmll.sh
+
+  package-toolbelt:
+    name: Package and Publish Toolbelt
+    runs-on: ubuntu-latest
+    needs: azure-pmll
+
+    steps:
+      # Step 1: Download Build Artifacts
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: build-artifacts
+
+      # Step 2: Build Docker Image
+      - name: Build Docker Image
+        run: docker build -t modular_brain_toolbelt:latest .
+
+      # Step 3: Push Docker Image to Registry
+      - name: Push Docker Image to Registry
+        run: |
+          docker tag modular_brain_toolbelt:latest ghcr.io/<repository>/modular_brain_toolbelt:latest
+          docker push ghcr.io/<repository>/modular_brain_toolbelt:latest
+
+Features and Additions
+	1.	Triggering Events:
+	•	Push and Pull Requests to the main branch trigger the workflow.
+	2.	Detailed Steps for Each Job:
+	•	rabbit-build: Compiles all components.
+	•	rabbit-run: Tests the executables and Docker runs.
+	•	bugzap-pesterbot: Scans and removes rogue code (e.g., pesterbot).
+	•	azure-pmll: Sets up and validates Azure CosmosDB for ModularBrain.
+	•	package-toolbelt: Creates and pushes the Docker image to the registry.
+	3.	Simulated Actions:
+	•	Each step outputs relevant logs to ensure visibility and debugging.
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  rabbit-build:
+    name: 🛠️ Build the Rabbit Protocol
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-24.04, windows-2025, macos-2025]
+    steps:
+      - name: 🐇 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🐇 Setup Go Environment
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.20'
+
+      - name: 🐇 Install Dependencies
+        run: |
+          go mod tidy
+          go mod vendor
+
+      - name: 🐇 Install Docker and Clang
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y docker.io clang
+
+      - name: 🐇 Build Docker and Clang ISOs
+        run: |
+          mkdir -p iso_mount
+          echo "Building Docker ISO..."
+          dd if=/dev/zero of=docker_iso.img bs=1M count=1024
+          mkfs.ext4 docker_iso.img
+          echo "Building Clang ISO..."
+          dd if=/dev/zero of=clang_iso.img bs=1M count=1024
+          mkfs.ext4 clang_iso.img
+
+      - name: 🐇 Mount Docker ISO
+        run: |
+          sudo mount -o loop docker_iso.img iso_mount
+          docker build -t docker_iso_tool ./iso_mount
+
+      - name: 🐇 Build with Clang
+        run: |
+          sudo mount -o loop clang_iso.img iso_mount
+          clang --version
+          clang ./cmd/main.go -o rabbit_protocol_clang
+
+      - name: 🐇 Save Build Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: rabbit_protocol_${{ matrix.os }}
+          path: |
+            rabbit_protocol
+            rabbit_protocol_clang
+            docker_iso.img
+            clang_iso.img
+
+  rabbit-run:
+    name: 🚀 Run the Rabbit Protocol
+    runs-on: ${{ matrix.os }}
+    needs: rabbit-build
+    steps:
+      - name: 🐇 Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🐇 Run Docker and Clang Tests
+        run: |
+          docker run --rm -v $(pwd):/usr/src/app -w /usr/src/app docker_iso_tool ./rabbit_protocol
+          ./rabbit_protocol_clang
+
+  bugzap-pesterbot:
+    name: 🐇 BugZap PesterBot
+    runs-on: ubuntu-latest
+    needs: rabbit-run
+    steps:
+      - name: 🐇 Scan for Rogue Code
+        run: |
+          echo "Scanning for pesterbot code..."
+          grep -r "pesterbot" ./cmd || echo "No pesterbot found!"
+
+      - name: 🐇 Fix and Remove Bugs
+        run: |
+          # Example remediation
+          sed -i '/pesterbot/d' ./cmd/main.go
+
+  package-toolbelt:
+    name: 📦 Package Toolbelt/Kit
+    runs-on: ubuntu-latest
+    needs: bugzap-pesterbot
+    steps:
+      - name: 🐇 Download Build Artifacts
+        uses: actions/download-artifact@v3
+        with:
+          name: rabbit_protocol_${{ matrix.os }}
+          path: ./builds
+
+      - name: 🐇 Create Container Image
+        run: |
+          mkdir -p container
+          mv ./builds/* ./container/
+          docker build -t rabbit_toolbelt:latest ./container
+
+      - name: 🐇 Push Container to Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+      - run: |
+          docker tag rabbit_toolbelt:latest ghcr.io/${{ github.repository }}/rabbit_toolbelt:latest
+          docker push ghcr.io/${{ github.repository }}/rabbit_toolbelt:latest
+
+contract:
+  name: JKEdwards_Employment_Contract
+  version: 1.0
+  description: >
+    Employment contract for Josef Kurk Edwards integrating details
+    from OpenAI, Interchain Inc., and blockchain-based compensation structures.
+  wallets:
+    bitcoin_wallet: 35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d
+    cosmos_wallet: cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd
+
+employee_details:
+  name: Josef Kurk Edwards
+  title: Principal Architect
+  address: 6389 W Appomattox Ln, Homosassa, FL 34448
+  dob: June 11, 1995
+
+compensation:
+  base_salary: 300000
+  ppu_equity:
+    percentage: 10
+    vesting:
+      total_months: 48
+      cliff_months: 12
+      monthly_vesting: true
+  performance_bonus: 20
+  token_compensation:
+    amount: 50000
+    currency: ATOM
+    vesting:
+      total_months: 48
+      cliff_months: 12
+  estimated_total: 500000
+
+benefits:
+  healthcare: Comprehensive medical, dental, and vision
+  pto:
+    type: Unlimited
+    additional_days: 18
+    sick_days: 10
+  retirement_plan: 401(k) with 5% match
+  professional_development: 10000
+  equipment_stipend:
+    initial: 2500
+    annual: 1000
+  remote_work: Co-working space allowance
+
+responsibilities:
+  - Lead PMLL framework integration for AI scaling
+  - Collaborate on AI ethics, research, and team mentorship
+  - Automate pipelines for Interchain DevOps tasks
+  - Ensure IRS compliance as W9 Tax Specialist & Preparer
+
+termination_clauses:
+  voluntary: 30-day notice required
+  involuntary:
+    severance_package: 3 months salary
+    equity_forfeiture: true
+
+intellectual_property:
+  pre_existing_ip: PMLL Framework
+  developed_ip: Joint ownership with employer
+
+non_compete:
+  duration: 3 years
+  restrictions: >
+    Employee may not engage in ventures competing with OpenAI
+    or Interchain Inc. for the duration of the non-compete period.
+
+governing_law: New York
+
+name: Engine Workflow
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  setup-environment:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🛠️ Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y clang gcc python3 python3-pip docker.io
+          pip3 install -r requirements.txt
+
+  build-engine:
+    name: Build Engine
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - name: 🛠️ Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Build Engine
+        run: |
+          if [[ $RUNNER_OS == "Windows" ]]; then
+            cl /EHsc engine.cpp /Feengine.exe
+          else
+            g++ -o engine engine.cpp
+  run-tests:
+    name: Run Tests
+    runs-on: ubuntu-latest
+    needs: build-engine
+    steps:
+      - name: 🛠️ Checkout Code
+        uses: actions/checkout@v3
+
+      - name: 🛠️ Run Unit Tests
+        run: |
+          ./engine --test
+
+      - name: 🛠️ Run Integration Tests
+        run: |
+          python3 integration_tests.py
+
+# .mergify.yml
+commands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  rebase:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  squash:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  backport:
+    conditions:
+      - sender-permission >= reader
+  unqueue:
+    conditions:
+      - ""
+      - sender-permission >= reader
+
+pull_request_rules:
+  - name: Make sure PRs are up-to-date before merging with rebase
+    description: Automatically rebases PRs when they are out-of-date with the base branch to avoid semantic conflicts.
+    conditions:
+      - "#commits-behind >= 10"
+    actions:
+      rebase:
+
+  - name: Add a queue label when PR is queued
+    description: Toggles the queue label when a pull request is added to or removed from the merge queue.
+    conditions:
+      - queue-position > 0
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Request review from the team
+    description: Automatically requests a review from the appropriate team when checks are green and no reviews are pending.
+    conditions:
+      - -closed
+      - "#approved-reviews-by = 0"
+      - "#changes-requested-reviews-by = 0"
+      - review-requested != @TEAM_NAME_HERE
+    actions:
+      request_reviews:
+        teams:
+          - TEAM_NAME_HERE
+
+  - name: Automatic merge
+    description: Automatically merges PRs that pass all branch protections and have the `automerge` label.
+    conditions:
+      - label = automerge
+      - check-successful
+    actions:
+      merge:
+        method: squash
+
+  "contract": {
+        "name": "JKEdwards_Employment_Contract",
+        "version": 1.0,
+        "description": "Employment contract for Josef Kurk Edwards integrating GitHub OAuth for automation.",
+        "wallets": {
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+        },
+        "github_token": "NICE TRY HACKER LOL"
+    },
+    "employee_details": {
+        "name": "Josef Kurk Edwards",
+        "title": "Principal Architect",
+        "address": "6389 W Appomattox Ln, Homosassa, FL 34448",
+        "dob": "June 11, 1995"
+    },
+    "compensation": {
+        "base_salary": 300000,
+        "token_compensation": {
+            "amount": 50000,
+            "currency": "ATOM",
+            "vesting": {
+                "total_months": 48,
+                "cliff_months": 12
+            }
+        }
+    },
+    "benefits": {
+        "healthcare": "Comprehensive medical, dental, and vision"
+    },
+    "termination_clauses": {
+        "voluntary": "30-day notice required"
+    }
+}
+
+{
+    "contract": {
+        "name": "JKEdwards_Employment_Contract",
+        "version": 1.0,
+        "description": "Employment contract for Josef Kurk Edwards integrating GitHub OAuth for automation.",
+        "wallets": {
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+        },
+        "github_token": "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"
+    },
+    "employee_details": {
+        "name": "Josef Kurk Edwards",
+        "title": "Principal Architect",
+        "address": "6389 W Appomattox Ln, Homosassa, FL 34448",
+        "dob": "June 11, 1995"
+    },
+    "compensation": {
+        "base_salary": 300000,
+        "token_compensation": {
+            "amount": 50000,
+            "currency": "ATOM",
+            "vesting": {
+                "total_months": 48,
+                "cliff_months": 12
+            }
+        }
+    },
+    "benefits": {
+        "healthcare": "Comprehensive medical, dental, and vision"
+    },
+    "termination_clauses": {
+        "voluntary": "30-day notice required"
+    }
+}
+
+name: Bearycool Employment Contract Automation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering of this workflow
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  deploy-contract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Compile Smart Contract
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      - name: Instantiate Contract
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "${{ secrets.GITHUB_TOKEN }}",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+  automate-github:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use GitHub Token
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/user/bearycool11
+
+name: OAuth Integration Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  integrate-oauth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Environment
+        run: |
+          echo "Setting up environment variables..."
+
+      - name: Test OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+
+      - name: Compile Smart Contract
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      - name: Instantiate Contract with OAuth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "$GITHUB_TOKEN",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+  test-automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Verify OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/bearycool11
+
+name: Bearycool Employment Contract and OAuth Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  deploy-and-integrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Rust environment for smart contract compilation
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      # Step 3: Compile the CosmWasm smart contract
+      - name: Compile Smart Contract
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      # Step 4: Deploy the compiled smart contract to the Cosmos blockchain
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      # Step 5: Instantiate the contract with secure OAuth token integration
+      - name: Instantiate Contract with OAuth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "$GITHUB_TOKEN",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+      # Step 6: Validate OAuth token and test integration with GitHub API
+      - name: Verify OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+
+      # Step 7: Confirm OAuth token validity for the user account
+      - name: Confirm GitHub User Access
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/users/bearycool11
+
+commands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  rebase:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  squash:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  backport:
+    conditions:
+      - sender-permission >= writer
+  unqueue:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+
+pull_request_rules:
+  - name: Ensure PRs are up-to-date before merging
+    description: Automatically rebase PRs when they are out-of-date with the base branch.
+    conditions:
+      - "#commits-behind >= 1"
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      rebase:
+
+  - name: Assign Reviews to Senior Engineering Team
+    description: Assign PRs to senior engineering team members for approval.
+    conditions:
+      - -open
+      - "#approved-reviews-by = 1"
+      - "#changes-requested-reviews-by = 1"
+      - review-requested != @senior-engineering
+    actions:
+      request_reviews:
+        teams:
+          - senior-engineering
+
+  - name: Assign Reviews to IBC Engineers
+    description: Assign PRs to the IBC team for technical and protocol analysis.
+    conditions:
+      - label = protocol-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - ibc-team
+
+  - name: Assign Marketing Reviews
+    description: Assign marketing-related PRs to the Marketing and MarComms teams.
+    conditions:
+      - label = marketing
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - marketing
+          - marcomms
+
+  - name: Request Community Review
+    description: Ensure community team reviews specific documentation PRs.
+    conditions:
+      - label = community-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - community-team
+
+  - name: Automatic Merge
+    description: Merge PRs when all conditions are met, including label `automerge`.
+    conditions:
+      - label = automerge
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      merge:
+
+  - name: Toggle Merge Queue Label
+    description: Add or remove `merge-queued` label when a PR is queued.
+    conditions:
+      - queue-position > 0
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Include Dr. Aditya and Dr. J.K. Edwards for Key Engineering Reviews
+    description: Notify and request approvals from Dr. Aditya Sri Pal and Dr. J.K. Edwards for high-priority PRs.
+    conditions:
+      - label = high-priority
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrAdityaSriPal
+          - DrJKEdwards
+
+  - name: Senior Advisor Involvement for Protocol Evolution
+    description: Ensure Dr. Fei Fei Li, Dr. Andrew Ng, and Dr. Elon Musk are involved in significant changes.
+    conditions:
+      - label = protocol-evolution
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrFeiFeiLi
+          - DrAndrewNg
+          - ElonMusk
+          - Amy X Zhang 
+
+  - name: Ensure CEO Review for Final Merges
+    description: Request Sam Altman's approval for final merges with critical tags.
+    conditions:
+      - label = final-merge
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - SamAltman
+
+  - name: Operations Team Engagement
+    description: Notify operations team for budget-related changes.
+    conditions:
+      - label = operations
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - operations
+
+  - name: OpenAI Team Review for AI Protocols
+    description: Assign OpenAI team for changes tagged with `ai-protocol`.
+    conditions:
+      - label = ai-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - openai-team
+
+  - name: Interchain.io Review for Inter-Protocol Adjustments
+    description: Assign Interchain.io team for changes requiring inter-protocol review.
+    conditions:
+      - label = inter-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - interchain-team
+
+commands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  rebase:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  squash:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  backport:
+    conditions:
+      - sender-permission >= writer
+  unqueue:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+
+pull_request_rules:
+  - name: Ensure PRs are up-to-date before merging
+    description: Automatically rebase PRs when they are out-of-date with the base branch.
+    conditions:
+      - "#commits-behind >= 1"
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      rebase:
+
+  - name: Assign Reviews to Senior Engineering Team
+    description: Assign PRs to senior engineering team members for approval.
+    conditions:
+      - -open
+      - "#approved-reviews-by = 1"
+      - "#changes-requested-reviews-by = 1"
+      - review-requested != @senior-engineering
+    actions:
+      request_reviews:
+        teams:
+          - senior-engineering
+
+  - name: Assign Reviews to IBC Engineers
+    description: Assign PRs to the IBC team for technical and protocol analysis.
+    conditions:
+      - label = protocol-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - ibc-team
+
+  - name: Assign Marketing Reviews
+    description: Assign marketing-related PRs to the Marketing and MarComms teams.
+    conditions:
+      - label = marketing
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - marketing
+          - marcomms
+
+  - name: Request Community Review
+    description: Ensure community team reviews specific documentation PRs.
+    conditions:
+      - label = community-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - community-team
+
+  - name: Automatic Merge
+    description: Merge PRs when all conditions are met, including label `automerge`.
+    conditions:
+      - label = automerge
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      merge:
+
+  - name: Toggle Merge Queue Label
+    description: Add or remove `merge-queued` label when a PR is queued.
+    conditions:
+      - queue-position > 0
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Include Dr. Aditya and Dr. J.K. Edwards for Key Engineering Reviews
+    description: Notify and request approvals from Dr. Aditya Sri Pal and Dr. J.K. Edwards for high-priority PRs.
+    conditions:
+      - label = high-priority
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrAdityaSriPal
+          - DrJKEdwards
+
+  - name: Senior Advisor Involvement for Protocol Evolution
+    description: Ensure Dr. Fei Fei Li, Dr. Andrew Ng, and Dr. Elon Musk are involved in significant changes.
+    conditions:
+      - label = protocol-evolution
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrFeiFeiLi
+          - DrAndrewNg
+          - ElonMusk
+          - Amy X Zhang 
+
+  - name: Ensure CEO Review for Final Merges
+    description: Request Sam Altman's approval for final merges with critical tags.
+    conditions:
+      - label = final-merge
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - SamAltman
+
+  - name: Operations Team Engagement
+    description: Notify operations team for budget-related changes.
+    conditions:
+      - label = operations
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - operations
+
+  - name: OpenAI Team Review for AI Protocols
+    description: Assign OpenAI team for changes tagged with `ai-protocol`.
+    conditions:
+      - label = ai-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - openai-team
+
+  - name: Interchain.io Review for Inter-Protocol Adjustments
+    description: Assign Interchain.io team for changes requiring inter-protocol review.
+    conditions:
+      - label = inter-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - interchain-team
+
+name: Azure DevOps CLI Installation and Validation
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:  # Allow manual triggering of the workflow
+
+jobs:
+  setup-environment:
+    name: Setup Environment
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🐇 Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: 🐇 Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3 python3-pip curl
+          python3 -m pip install azure-cli
+
+  install-azure-devops-cli:
+    name: Install/Update Azure DevOps CLI
+    runs-on: ubuntu-latest
+    steps:
+      - name: 🐇 Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: 🐇 Install/Update Azure DevOps CLI
+        run: |
+          chmod +x ./install-azure-devops-cli.sh
+          ./install-azure-devops-cli.sh
+
+  validate-installation:
+    name: Validate Azure DevOps CLI Installation
+    runs-on: ubuntu-latest
+    needs: install-azure-devops-cli
+    steps:
+      - name: 🐇 Verify Azure DevOps CLI Installation
+        run: |
+          az extension show -n azure-devops
