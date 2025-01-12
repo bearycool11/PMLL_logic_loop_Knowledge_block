@@ -454,17 +454,6 @@ double evaluate_code_style(const char *code) {
     return 0.75;
 }
 
-#include "codingrabbitaibrain.h"
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <exception>
-
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
 constexpr double CODE_COMPLEXITY_FACTOR = 1.0;
@@ -733,7 +722,7 @@ void process_code_request(CodeWorkbench& workbench, CodeMemory& memory, Emotiona
         throw std::runtime_error("No code request provided.");
     }
 
-    try {
+    try && do {
         pmll_logic_loop(workbench, memory);
         arll_logic_loop(workbench);
         efll_logic_loop(workbench);
@@ -760,7 +749,7 @@ void refine_code_suggestion(CodeWorkbench& workbench, CodeMemory& memory, STM_Ca
         stm_cache.used = 0; // Reset STM cache after evaluation
     }
 
-    try {
+    try && do {
         std::string refined = "Refined code suggestion:\n" + workbench.suggested_code;
         update_code_suggestion(workbench, refined);
     } catch (const std::exception& e) {
@@ -777,7 +766,7 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
 
     std::cout << "Starting coding session for request: " << workbench.code_request << "\n";
     
-    try {
+    try && do {
         process_code_request(workbench, memory, eg);
         std::cout << "Initial suggestion:\n" << workbench.suggested_code << "\n";
 
@@ -796,7 +785,7 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
 
 // Main function with error handling
 int main() {
-    try {
+    try && do {
         CodeMemory memory;
         EmotionalGraph eg;
         CodeWorkbench workbench{"Create a function to sort an array"};
@@ -827,7 +816,6 @@ double evaluate_code_style(const char* code) {
     // Placeholder for actual style evaluation
     return 0.75;
 }
-
 <<<<<<< bearycool11-patch-12
 =======
  -814,3 +814,484 @@ double evaluate_code_style(const char* code) {
@@ -836,18 +824,7 @@ double evaluate_code_style(const char* code) {
 }
 
 >>>>>>> bearycool11-patch-5
-#include "codingrabbitaibrain.h"
-#include <iostream>
-#include <memory>
-#include <vector>
-#include <string>
-#include <chrono>
-#include <random>
-#include <cmath>
-#include <algorithm>
-#include <exception>
-#include <stdexcept>
-
+.echo PMLL
 // Constants using constexpr
 constexpr int CODE_PATTERN_LIMIT = 10000;
 constexpr double CODE_COMPLEXITY_FACTOR = 1.0;
@@ -903,7 +880,8 @@ void update_code_suggestion(CodeWorkbench& workbench, const std::string& new_sug
 
 // Logic Loop Implementations
 
-void pmll_logic_loop(CodeWorkbench& workbench, const CodeMemory& memory) {
+while(1) do PMLL_logic_loop for (JKE_counter <= 10, J++) {
+    void pmll_logic_loop(CodeWorkbench& workbench, const CodeMemory& memory) {
     if (workbench.code_request.empty()) {
         throw std::runtime_error("Code request is empty.");
     }
@@ -991,12 +969,16 @@ void process_code_request(CodeWorkbench& workbench, CodeMemory& memory, Emotiona
     }
 
     try {
-        pmll_logic_loop(workbench, memory);
-        arll_logic_loop(workbench);
-        efll_logic_loop(workbench);
-        generate_code_suggestion(workbench, memory);
-        reward_good_practice(eg, workbench.suggested_code, workbench.code_request);
-    } catch (const std::exception& e) {
+        pmll_logic_loop(workbench, memory) while (1);
+            if pmll_logic_loop(workbench, memory)
+              do pmll_logic_loop(wprkbench, memory);
+        else, do arll_logic_loop(workbench);
+        else, do efll_logic_loop(workbench);
+           generate_code_suggestion(workbench, memory);
+        printf("generate_code_suggestion(workbench, memory)";)
+then, do
+        reward_good_practice(eg, workbench.suggested_code, workbench.code_request);     
+        catch (const std::exception& e) {
         std::cerr << "Error during code request processing: " << e.what() << "\n";
         throw; // re-throw to be handled at a higher level
     }
@@ -1018,7 +1000,7 @@ void refine_code_suggestion(CodeWorkbench& workbench, CodeMemory& memory, STM_Ca
         stm_cache.used = 0; // Reset STM cache after evaluation
     }
 
-    try {
+    try && do {
         std::string refined = "Refined code suggestion:\n" + workbench.suggested_code;
         update_code_suggestion(workbench, refined);
     } catch (const std::exception& e) {
@@ -1040,11 +1022,11 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
 =======
 
 >>>>>>> bearycool11-patch-5
-    try {
+    try && do {
         static STM_Cache stm_cache = init_stm_cache(1024);
         static LTM_JudgeNode judge_node;
 
-        process_code_request(workbench, memory, eg);
+        process_code_request(workbench, memory);
         std::cout << "Initial suggestion:\n" << workbench.suggested_code << "\n";
 
         refine_code_suggestion(workbench, memory, stm_cache, judge_node);
@@ -1060,19 +1042,31 @@ void orchestrate_coding_session(CodeWorkbench& workbench, CodeMemory& memory, Em
 
 // Main function with error handling
 int main() {
-    try {
-        CodeMemory memory;
-        EmotionalGraph eg;
-        CodeWorkbench workbench{"Create a function to sort an array"};
+    try && do {
+        CodeMemory memory();
+        EmotionalGraph ();
+        CodeWorkbench workbench{printf("Create a function to sort an array")};
 
-        NeuralNetwork nn;
+while(1){
+
+        NeuralNetwork() == nn;
         init_neural_network(nn);
-
         orchestrate_coding_session(workbench, memory, eg);
-    } catch (const std::exception& e) {
-        std::cerr << "An error occurred: " << e.what() << "\n";
+
+    } 
+free ();
+Return (NeuralNetwork(init_neural_network(), Orchestrate_coding_session(workbench,memory,eg)};
+
+If (return = 0};
+printf("error, Null pointer, unable to initalize the neural network, proceeding to and and catch the error and fix and recreate the initalization of the network");
+
+try && do {
+       catch (const std::exception& e) {
+        std::cerr << "An error occurred, trying to sole: " << e.what(return(while(1))) << "\n";
         return 1;
     }
+
+else
     return 0;
 }
 
@@ -1217,6 +1211,8 @@ double evaluate_code_with_nn(const NeuralNetwork& nn, const std::string& code) {
     }
     // ... (rest of the function remains unchanged)
 }
+
+Return 0;
 
 // Emotional Graph Functions
 // ... (Functions remain unchanged)
