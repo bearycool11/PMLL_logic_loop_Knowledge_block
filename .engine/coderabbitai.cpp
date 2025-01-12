@@ -3493,3 +3493,251 @@ Error handling and cleanup
 @return 0 on success, 1 on error
 */
 int main();
+
+template<typename T>
+class Result {
+    std::variant<T, std::string> data;
+public:
+    static Result<T> Ok(T value) { return Result{std::move(value)}; }
+    static Result<T> Err(std::string error) { return Result{std::move(error)}; }
+    bool is_ok() const { return std::holds_alternative<T>(data); }
+    const T& value() const { return std::get<T>(data); }
+    const std::string& error() const { return std::get<std::string>(data); }
+};
+
+Result<std::unique_ptr<CodePattern>> create_code_pattern(const std::string& snippet, 
+                                                       const std::string& language, 
+                                                       double complexity) {
+    if (snippet.empty()) {
+        return Result<std::unique_ptr<CodePattern>>::Err("Empty code snippet");
+    }
+    if (complexity < 0) {
+        return Result<std::unique_ptr<CodePattern>>::Err("Invalid complexity value");
+    }
+    return Result<std::unique_ptr<CodePattern>>::Ok(
+        std::make_unique<CodePattern>(CodePattern{snippet, language, complexity})
+    );
+}
+Thread Safety for Memory Operations:
+class ThreadSafeMemory {
+    std::mutex mutex;
+    CodeMemory memory;
+public:
+    void add_pattern(std::unique_ptr<CodePattern>&& pattern) {
+        std::lock_guard<std::mutex> lock(mutex);
+        if (memory.patterns.size() == CODE_PATTERN_LIMIT) {
+            memory.patterns.erase(memory.patterns.begin());
+        }
+        memory.patterns.push_back(std::move(pattern));
+    }
+    
+    std::vector<CodePattern*> get_patterns() {
+        std::lock_guard<std::mutex> lock(mutex);
+        std::vector<CodePattern*> result;
+        result.reserve(memory.patterns.size());
+        for (const auto& pattern : memory.patterns) {
+            result.push_back(pattern.get());
+        }
+        return result;
+    }
+};
+Improved Neural Network with Batch Processing:
+class BatchProcessor {
+    std::vector<std::string> batch_inputs;
+    size_t batch_size;
+public:
+    explicit BatchProcessor(size_t size) : batch_size(size) {}
+    
+    void add_input(std::string input) {
+        batch_inputs.push_back(std::move(input));
+        if (batch_inputs.size() >= batch_size) {
+            process_batch();
+        }
+    }
+    
+    void process_batch() {
+        // Process multiple inputs in parallel
+        std::vector<std::future<double>> results;
+        for (const auto& input : batch_inputs) {
+            results.push_back(std::async(std::launch::async, 
+                [&]() { return evaluate_code_with_nn(nn, input); }));
+        }
+        batch_inputs.clear();
+    }
+};
+Automated GitHub Actions Workflow:
+name: CodeRabbit Engine CI
+
+on:
+  push:
+    paths:
+      - '**.cpp'
+      - '**.h'
+  pull_request:
+    paths:
+      - '**.cpp'
+      - '**.h'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+    - name: Build
+      run: |
+        mkdir build && cd build
+        cmake ..
+        make
+    - name: Test
+      run: |
+        cd build
+        ctest --output-on-failure
+        
+        cmake_minimum_required(VERSION 3.15)
+project(CodeRabbitEngine VERSION 1.0.0 LANGUAGES CXX)
+
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+# Dependencies
+find_package(Threads REQUIRED)
+
+# Library target
+add_library(coderabbit_engine
+    arc_agi_benchmark.cpp
+    benchmark_engine.cpp
+)
+
+target_include_directories(coderabbit_engine PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+target_link_libraries(coderabbit_engine PRIVATE
+    Threads::Threads
+)
+
+# Tests target
+enable_testing()
+add_executable(engine_tests
+    arc_agi_benchmark.cpp
+)
+
+target_link_libraries(engine_tests PRIVATE
+    coderabbit_engine
+)
+Let's consolidate the workflows into a single comprehensive one:
+name: CodeRabbit Engine CI/CD
+
+on:
+  push:
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - 'CMakeLists.txt'
+      - '.github/workflows/**'
+  pull_request:
+    paths:
+      - '**.cpp'
+      - '**.h'
+      - 'CMakeLists.txt'
+
+jobs:
+  build-and-test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Debug, Release]
+        compiler: [gcc, clang]
+        exclude:
+          - os: windows-latest
+            compiler: clang
+
+    steps:
+    - uses: actions/checkout@v3
+    
+    - name: Install Linux Dependencies
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y cmake build-essential
+        sudo apt-get install -y ${{ matrix.compiler }}
+        sudo apt-get install -y cppcheck
+    
+    - name: Configure CMake
+      run: |
+        mkdir build
+        cmake -B build -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+    
+    - name: Build
+      run: cmake --build build --config ${{ matrix.build_type }}
+    
+    - name: Static Analysis
+      if: runner.os == 'Linux'
+      run: |
+        cppcheck --enable=all --suppress=missingIncludeSystem --error-exitcode=1 .
+    
+    - name: Upload Artifacts
+      uses: actions/upload-artifact@v3
+      with:
+        name: build-${{ matrix.os }}-${{ matrix.build_type }}
+        path: build/
+Enhanced error handling for your existing components:
+// Add to your header files
+#include <variant>
+#include <string>
+#include <system_error>
+
+// Error handling for PMLL_ARLL system
+namespace pmll {
+    enum class ErrorCode {
+        Success = 0,
+        InvalidInput,
+        MemoryExhausted,
+        PatternMismatch,
+        BenchmarkFailed,
+        NetworkError
+    };
+
+    class Error {
+        ErrorCode code_;
+        std::string message_;
+    public:
+        Error(ErrorCode code, std::string message) 
+            : code_(code), message_(std::move(message)) {}
+        
+        ErrorCode code() const { return code_; }
+        const std::string& message() const { return message_; }
+    };
+
+    template<typename T>
+    class Result {
+        std::variant<T, Error> data_;
+    public:
+        static Result Ok(T value) { return Result{std::move(value)}; }
+        static Result Err(Error error) { return Result{std::move(error)}; }
+        
+        bool is_ok() const { return std::holds_alternative<T>(data_); }
+        const T& value() const { return std::get<T>(data_); }
+        const Error& error() const { return std::get<Error>(data_); }
+    };
+
+    // Example usage in PMLL_ARLL.h
+    Result<double> benchmark_performance(const std::string& test_case) {
+        try {
+            // Your existing benchmark code
+            double score = /* ... */;
+            return Result<double>::Ok(score);
+        } catch (const std::exception& e) {
+            return Result<double>::Err(Error{
+                ErrorCode::BenchmarkFailed,
+                std::string("Benchmark failed: ") + e.what()
+            });
+        }
+    }
+}
