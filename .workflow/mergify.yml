@@ -26,6 +26,63 @@ queue_rules:
       - check-success=get_current_step
       - check-success=handle_pull_request
       - check-success=handle_review
+      pull_request_rules:
+  - name: Automatic merge on approval
+    conditions:
+      - base=main
+      - "#approved-reviews-by>=1"
+      - check-success=rabbit-build
+      - check-success=rabbit-run
+      - check-success=bugzap-pesterbot
+      - check-success=azure-pmll
+      - check-success=package-toolbelt
+    actions:
+      merge:
+        method: squash
+        strict: true
+        commit_message: title+body
+
+  - name: Delete head branch after merge
+    conditions:
+      - merged
+    actions:
+      delete_head_branch: {}
+
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=rabbit-build
+      - check-success=rabbit-run
+      - check-success=bugzap-pesterbot
+      - check-success=azure-pmll
+      - check-success=package-toolbelt
+
+pull_request_rules:
+  - name: Automatic merge on approval
+    conditions:
+      - base=main
+      - "#approved-reviews-by>=1"
+      - check-success=get_current_step
+      - check-success=handle_pull_request
+      - check-success=handle_review
+    actions:
+      merge:
+        method: squash
+        strict: true
+        commit_message: title+body
+
+  - name: Delete head branch after merge
+    conditions:
+      - merged
+    actions:
+      delete_head_branch: {}
+
+queue_rules:
+  - name: default
+    conditions:
+      - check-success=get_current_step
+      - check-success=handle_pull_request
+      - check-success=handle_review
 
 pull_request_rules:
   - name: Automatic merge on approval
