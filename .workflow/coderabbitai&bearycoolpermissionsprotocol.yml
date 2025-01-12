@@ -6580,6 +6580,12 @@ queue_rules:
       - "review-requested=bearycool11"
       - "review-requested=codingrabbitai"
     merge_conditions:
+- name: Build
+  run: |
+    mkdir ${{ github.workspace }}/build
+    cd ${{ github.workspace }}/build
+    cmake .. -DCMAKE_BUILD_TYPE=Release
+    make -j$(nproc)
       - "merged=true"
 
 
