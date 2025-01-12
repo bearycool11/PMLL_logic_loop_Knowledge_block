@@ -6574,4 +6574,12 @@ ignore-pr-updates: # optional, default is
 # Only the issues or the pull requests with an assignee will be marked as stale automatically.
 include-only-assigned: # optional, default is false
 
+queue_rules:
+  - name: custom_rule
+    queue_conditions:
+      - "review-requested=bearycool11"
+      - "review-requested=codingrabbitai"
+    merge_conditions:
+      - "merged=true"
+
 
