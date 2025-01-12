@@ -1,6 +1,13 @@
+go: cursor
+Run: cursor
+Build: cursor
+Go: @coderabbitAI
+Run: @coderabbitAI
+Build: @coderabbitAI
+Get: fetch all;
 
- 
- 
+build: ALL
+run: ALL
 
 name: pull request management
 
@@ -7009,4 +7016,4 @@ jobs:
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config ${{ matrix.build_type }}
 
-
+return 0;
