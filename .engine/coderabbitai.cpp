@@ -1,3 +1,71 @@
+build: cursor
+run: cursor
+go: cursor
+name: CMake Build
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    # Example: runs on Ubuntu, but you can enable a matrix for multiple OSes or compilers if desired.
+    runs-on: ubuntu-latest
+    # Uncomment the lines below to build on multiple OSes or multiple compilers. 
+    # strategy:
+    #   fail-fast: false
+    #   matrix:
+    #     os: [ubuntu-latest, windows-latest]
+    #     build_type: [Release, Debug]
+    #     c_compiler: [gcc, clang]
+    #     include:
+    #       - os: ubuntu-latest
+    #         c_compiler: gcc
+    #       - os: ubuntu-latest
+    #         c_compiler: clang
+    #       - os: windows-latest
+    #         c_compiler: cl
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # (Optional) Cache CMake build directory to speed up incremental builds.
+      # If building in 'build', cache that directory:
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: build
+          key: ${{ runner.os }}-build-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-build-
+      # This step is optional if you have a modern CMake installed already.
+      # If you want to ensure a specific CMake version, you can keep or adjust this:
+      - name: Set up CMake
+        uses: jwlawson/actions-setup-cmake@v1
+        with:
+          # For example, specify version if you need a minimum version:
+          cmake-version: '3.24.0' 
+
+      - name: Configure CMake
+        run: |
+          cmake -S . -B build
+      - name: Build
+        run: |
+          cmake --build build
+      # (Optional) Run tests if you have a test suite configured with CTest.
+      - name: Test
+        if: always()
+        run: |
+          cmake --build build --target test
+          # OR
+          # cd build && ctest --verbose
+      # (Optional) Upload build artifacts—helpful if you want to download built binaries or logs.
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts
+          path: buil
+
 #include "codingrabbitaibrain.h"
 #include <iostream>
 #include <memory>
