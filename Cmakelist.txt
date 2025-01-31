@@ -1,0 +1,32 @@
+cmake_minimum_required(VERSION 3.10)
+
+# Name of your project
+project(pmll_logic_loop_knowledge_block
+        VERSION 0.1.0
+        DESCRIPTION "Example CMake project"
+        LANGUAGES CXX)
+
+# Specify the C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# (Optional) Turn on extra compiler warnings in a cross-platform way
+if(MSVC)
+    add_compile_options(/W4)
+else()
+    add_compile_options(-Wall -Wextra -pedantic)
+endif()
+
+# If you have a src/ folder, you can list your source files there
+# For a minimal example, we’ll just assume main.cpp is in the same folder
+add_executable(pmll_logic_loop_knowledge_block
+    main.cpp
+)
+
+# Optionally link libraries or set include directories, for example:
+# target_include_directories(pmll_logic_loop_knowledge_block PRIVATE include/)
+# target_link_libraries(pmll_logic_loop_knowledge_block PRIVATE some_library)
+
+# If you want to enable testing, you can add:
+# enable_testing()
+# add_test(NAME MyTest COMMAND pmll_logic_loop_knowledge_block)

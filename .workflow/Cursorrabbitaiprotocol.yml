@@ -1,4 +1,601 @@
-go: cursor
+name: "coderabbitai Workflow"
+
+on:
+  # Run this workflow whenever a pull request is opened
+  pull_request:
+    types:
+      - opened
+
+permissions:
+  contents: write    # Required if you need to edit files/metadata in the repo
+  pull-requests: write
+
+jobs:
+  auto_assign_coderabbitai:
+    name: "Auto-assign coderabbitai"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Auto-assign coderabbitai as reviewer
+        uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          # The built-in token that allows the Action to modify PRs
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          # If you want multiple reviewers, separate them with commas
+          reviewers: coderabbitai
+          addReviewers: true
+          addAssignees: falsename: "Mega Combined Workflow"
+
+##############################
+# EVENTS / TRIGGERS
+##############################
+on:
+  # On manual dispatch (button)
+  workflow_dispatch:
+
+  # Basic push event (e.g. building main branch)
+  push:
+    branches: [ "main" ]
+
+  # Pull request events
+  pull_request:
+    branches: [ "main" ]
+    types: [opened, reopened, assigned, review_requested, synchronize, ready_for_review]
+
+  # Pull request reviews
+  pull_request_review:
+    types: [submitted]
+
+##############################
+# PERMISSIONS
+##############################
+permissions:
+  contents: write       # For editing files, updating steps, etc.
+  pull-requests: write  # For auto-assign, or updating PR metadata
+  admin: write          # For advanced Rule Set or CODEOWNERS changes
+
+##############################
+# JOBS
+##############################
+jobs:
+
+  ############################################################################
+  # 1) get_current_step
+  #    Checks the "current step" from the ./.github/steps/-step.txt file
+  #    This logic is used by the Learning Workflow steps, which progress from
+  #    step 0 → 1 → 2 → 3 → 4 whenever certain PR events occur.
+  ############################################################################
+  get_current_step:
+    name: "Check Current Step Number"
+    runs-on: ubuntu-latest
+    outputs:
+      current_step: ${{ steps.get_step.outputs.current_step }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - id: get_step
+        run: |
+          echo "current_step=$(cat ./.github/steps/-step.txt)" >> $GITHUB_OUTPUT
+
+  ############################################################################
+  # 2) handle_pull_request
+  #    This covers the Learning Workflow logic for PR "opened" or "reopened",
+  #    or when someone is assigned or requested for review (Step 1→2→3).
+  ############################################################################
+  handle_pull_request:
+    name: Handle Pull Request Events
+    needs: [get_current_step]
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.is_template && (github.event_name == 'pull_request') }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          # Typically you might also ref: update-game if you want
+          # but that’s optional if you’re covering multiple PRs
+
+      # Auto-assign reviewers if current_step == 1 and PR is opened
+      - name: Assign Reviewers
+        if: ${{ needs.get_current_step.outputs.current_step == 1 && github.event.action == 'opened' }}
+        uses: kentaro-m/auto-assign-action@v2.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          reviewers: bearycool11,codingrabbitai
+          addReviewers: true
+          addAssignees: false
+
+      # Step 1 → 2 on "opened" if the PR branch is 'update-game'
+      - name: Update Step from 1 to 2
+        if: ${{ needs.get_current_step.outputs.current_step == 1 && github.event.action == 'opened' && github.head_ref == 'update-game' }}
+        uses: skills/action-update-step@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          from_step: 1
+          to_step: 2
+          branch_name: update-game
+
+      # Step 2 → 3 if assigned or review_requested
+      - name: Update Step from 2 to 3
+        if: ${{ needs.get_current_step.outputs.current_step == 2 && (github.event.action == 'assigned' || github.event.action == 'review_requested') }}
+        uses: skills/action-update-step@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          from_step: 2
+          to_step: 3
+          branch_name: update-game
+
+  ############################################################################
+  # 3) handle_review
+  #    This covers the Learning Workflow logic for a PR review submission
+  #    (Step 3→4).
+  ############################################################################
+  handle_review:
+    name: Handle Review Submission
+    needs: [get_current_step]
+    runs-on: ubuntu-latest
+    if: ${{ !github.event.repository.is_template && needs.get_current_step.outputs.current_step == 3 && github.event_name == 'pull_request_review' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: update-game
+
+      - name: Update Step from 3 to 4
+        uses: skills/action-update-step@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          from_step: 3
+          to_step: 4
+          branch_name: update-game
+
+  ############################################################################
+  # 4) Step 0, Welcome
+  #    Creates an "update-game" branch, modifies index.html, and moves from
+  #    Step 0 → 1 upon a push to main (when the user is at step 0).
+  ############################################################################
+  step0_welcome:
+    name: "Step 0, Welcome"
+    runs-on: ubuntu-latest
+    needs: [get_current_step]
+    if: >-
+      ${{ !github.event.repository.is_template
+         && (github.event_name == 'push')
+         && (needs.get_current_step.outputs.current_step == 0) }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Prepare a branch and pull request
+        run: |
+          echo "Make sure we are on step 0"
+          if [ "$(cat .github/steps/-step.txt)" != 0 ]
+          then
+            echo "Current step is not 0"
+            exit 0
+          fi
+          echo "Make a branch"
+          BRANCH=update-game
+          git checkout -b $BRANCH
+          echo "Update index.html"
+          sed -i.bak 's/Game over/Game over, refresh to play again 🧑‍💻 🤖!/' index.html
+          echo "Make a commit"
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add index.html
+          git commit --message="Update game over message"
+          echo "Push"
+          git push --set-upstream origin $BRANCH
+          echo "Restore main"
+          git checkout main
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Update to step 1
+        uses: skills/action-update-step@v2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          from_step: 0
+          to_step: 1
+          branch_name: update-game
+
+  ############################################################################
+  # 5) Assign CODEOWNERS & Manage Ruleset
+  #    This demonstrates updating a ruleset to add bypass_actors, plus
+  #    creating a CODEOWNERS file in main, etc.
+  ############################################################################
+  manage_repo:
+    name: Manage Repo & CODEOWNERS
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Install jq
+        run: sudo apt-get install -y jq
+
+      - name: Update Ruleset via GitHub API
+        env:
+          GITHUB_TOKEN: ${{ secrets.ADMIN_PAT }}
+        run: |
+          REPO_OWNER=${{ github.repository_owner }}
+          REPO_NAME=${{ github.event.repository.name }}
+          RULESET_NAME="your-ruleset-name"
+          USER_TO_ADD="bearycool11"
+
+          ruleset_id=$(curl -s -L \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/rulesets" | \
+            jq -r --arg name "$RULESET_NAME" '.[] | select(.name==$name) | .id')
+
+          if [ -z "$ruleset_id" ]; then
+            echo "No ruleset with the specified name found"
+            exit 1
+          fi
+
+          # Add write permissions for the user to bypass rules
+          curl -s -L -X PATCH \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer $GITHUB_TOKEN" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            -d '{"bypass_actors": {"users": ["'"$USER_TO_ADD"'"]}}' \
+            "https://api.github.com/repos/$REPO_OWNER/$REPO_NAME/rulesets/$ruleset_id"
+
+          echo "Ruleset updated for $USER_TO_ADD with write access"
+
+      - name: Create CODEOWNERS file
+        run: |
+          mkdir -p .github
+          echo "* @bearycool11" > .github/CODEOWNERS
+          echo "docs/* @docs-team" >> .github/CODEOWNERS
+          echo "scripts/* @script-maintainers" >> .github/CODEOWNERS
+
+      - name: Commit and push CODEOWNERS file
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add .github/CODEOWNERS
+          git commit -m "Add CODEOWNERS file"
+          git push origin main
+
+  ############################################################################
+  # 6) Merge Queue Action (Optional)
+  #    Example usage of autifyhq/merge-queue-action for queued merges.
+  ############################################################################
+  merge_queue_action:
+    name: "Merge Queue Action"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Merge Queue
+        uses: autifyhq/merge-queue-action@v0.1.0
+        with:
+          # optional inputs for your queue logic
+          # e.g. token: ${{ secrets.GITHUB_TOKEN }}
+          # queue_rules, etc.
+          pass: "just an example"
+
+  ############################################################################
+  # 7) Aspect Workflows (Optional)
+  #    Example usage of aspect-build/workflows-action for Bazel tasks
+  ############################################################################
+  aspect_workflows:
+    name: "Aspect Workflows"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Aspect workflows-action
+        uses: aspect-build/workflows-action@5.9.24
+        with:
+          # path from the git repository to the WORKSPACE.bazel file
+          workspace: "."
+          # the task that we want to generate steps for and then run
+          task: "build"
+          # additional arguments to be passed to the task instance
+          args: "--nobuild"
+
+  ############################################################################
+  # 8) run-sqlpackage (Optional)
+  #    Example usage of Azure/run-sqlpackage-action
+  ############################################################################
+  run_sqlpackage:
+    name: "run-sqlpackage"
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: run-sqlpackage
+        uses: Azure/run-sqlpackage-action@v1.0.0
+        with:
+          action: Publish
+          sourcepath: "MyDb.dacpac"
+          profile: "database.publish.xml"
+          database-server: "mydbserver.database.windows.net"
+          database-name: "MyDatabase"
+          authtoken: ${{ secrets.AZURE_SQL_TOKEN }}
+
+  ############################################################################
+  # 9) First interaction
+  #    Posts a comment when a user first opens an issue/PR in your repository.
+  ############################################################################
+  first_interaction:
+    name: "First Interaction"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/first-interaction@v1.3.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          issue-message: "Hi there! Thanks for opening your first issue!"
+          pr-message: "Thanks for your first PR—We appreciate it!"
+
+  ############################################################################
+  # 10) Close Stale Issues
+  #     Marks and closes stale issues / PRs automatically after inactivity.
+  ############################################################################
+  close_stale_issues:
+    name: "Close Stale Issues"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/stale@v9.0.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          stale-issue-message: "This issue is stale!"
+          stale-pr-message: "This pull request is stale!"
+          days-before-stale: 60
+          days-before-close: 7
+          stale-issue-label: "Stale"
+          stale-pr-label: "Stale"
+          remove-stale-when-updated: true
+
+  ############################################################################
+  # 11) Multi-Platform CMake builds (Devcontainer + caching)
+  #     Example of building C++ code on Ubuntu & Windows with different compilers.
+  ############################################################################
+  devcontainer_cosmos:
+    name: "devcontainer-cosmos (Multi-Platform w/ Docker container on Ubuntu)"
+    runs-on: ${{ matrix.os }}
+    # Strategy matrix with multiple OS/compilers
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          # Windows + MSVC
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          # Ubuntu + GCC
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          # Ubuntu + Clang
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    # Use a container only on ubuntu-latest
+    container:
+      image: .devcontainer/devcontainer2025:latest
+      credentials:
+        username: ${{ secrets.REGISTRY_USERNAME }}
+        password: ${{ secrets.REGISTRY_PASSWORD }}
+      # If the job is Windows, it won't attempt to run container-based job.
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Cache build
+        uses: actions/cache@v3
+        with:
+          path: |
+            ${{ (matrix.os == 'ubuntu-latest') && '.devcontainer/build' || 'build' }}
+          key: ${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ hashFiles('.devcontainer/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+
+      - name: Configure CMake
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cmake -S .devcontainer \
+                  -B .devcontainer/build \
+                  -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                  -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                  -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+          else
+            cmake -S . \
+                  -B build \
+                  -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                  -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                  -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cmake --build .devcontainer/build --config ${{ matrix.build_type }}
+          else
+            cmake --build build --config ${{ matrix.build_type }}
+
+      - name: Test
+        run: |
+          if [ "${{ matrix.os }}" = "ubuntu-latest" ]; then
+            cd .devcontainer/build
+            ctest --build-config ${{ matrix.build_type }}
+          else
+            cd build
+            ctest --build-config ${{ matrix.build_type }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+          path: ${{ (matrix.os == 'ubuntu-latest') && '.devcontainer/build' || 'build' }}
+
+  ############################################################################
+  # 12) devcontainer-minimal
+  #     A simpler devcontainer-based approach if desired
+  ############################################################################
+  devcontainer_minimal:
+    name: "devcontainer-minimal"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up cache
+        uses: actions/cache@v3
+        with:
+          path: |
+            .devcontainer/build
+          key: ${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}-${{ hashFiles('.devcontainer/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+
+      - name: Configure CMake
+        run: |
+          cmake -S .devcontainer \
+                -B .devcontainer/build \
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+
+      - name: Build
+        run: |
+          cmake --build .devcontainer/build --config ${{ matrix.build_type }}
+
+      - name: Test
+        working-directory: .devcontainer/build
+        run: ctest --build-config ${{ matrix.build_type }}
+
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-artifacts-${{ matrix.os }}-${{ matrix.c_compiler }}-${{ matrix.build_type }}
+          path: .devcontainer/build
+
+  ############################################################################
+  # 13) cmake-starter-3configs
+  #     Another standard multi-platform CMake approach from a "starter" workflow
+  ############################################################################
+  cmake_starter_3configs:
+    name: "cmake-starter-3configs"
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        build_type: [Release]
+        c_compiler: [gcc, clang, cl]
+        include:
+          - os: windows-latest
+            c_compiler: cl
+            cpp_compiler: cl
+          - os: ubuntu-latest
+            c_compiler: gcc
+            cpp_compiler: g++
+          - os: ubuntu-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+        exclude:
+          - os: windows-latest
+            c_compiler: gcc
+          - os: windows-latest
+            c_compiler: clang
+          - os: ubuntu-latest
+            c_compiler: cl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set reusable strings
+        id: strings
+        shell: bash
+        run: |
+          echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+      - name: Configure CMake
+        run: |
+          cmake -B ${{ steps.strings.outputs.build-output-dir }} \
+                -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }} \
+                -DCMAKE_C_COMPILER=${{ matrix.c_compiler }} \
+                -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} \
+                -S ${{ github.workspace }}
+
+      - name: Build
+        run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+
+      - name: Test
+        working-directory: ${{ steps.strings.outputs.build-output-dir }}
+        run: ctest --build-config ${{ matrix.build_type }}
+name: Deploy Press Release to Memory Silos
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - press_release.json
+
+jobs:
+  deploy-press-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Environment
+        run: sudo apt-get update && sudo apt-get install -y gcc openssl curl
+
+      - name: Make Scripts Executable
+        run: chmod +x *.sh
+
+      - name: Run Deploy Script
+        run: ./Deploy_Press_Release.shgo: cursor
 Run: cursor
 Build: cursor
 Go: @coderabbitAI

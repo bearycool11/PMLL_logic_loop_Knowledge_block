@@ -1,0 +1,230 @@
+use cosmwasm_std::{to_binary, Binary, Deps, DepsMut, Env, MessageInfo, Response, StdError, StdResult};
+use schemars::JsonSchema;
+use serde::{Deserialize, Serialize};
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct InstantiateMsg {
+    pub employee_name: String,
+    pub base_salary: u128,
+    pub ppu_equity: u8,
+    pub vesting_months: u16,
+    pub performance_bonus: u8,
+    pub initial_payment: u128,
+    pub payment_schedule: String,
+    pub healthcare: String,
+    pub retirement_plan: String,
+    pub vacation_policy: String,
+    pub professional_development: u128,
+    pub pre_existing_ip: String,
+    pub developed_ip: String,
+    pub confidentiality: String,
+    pub non_compete: String,
+    pub ethical_standards: String,
+    pub voluntary_termination: String,
+    pub involuntary_termination: String,
+    pub equity_forfeiture: String,
+    pub relocation_assistance: u128,
+    pub legal_disputes: String,
+    pub contract_renewal: String,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct ExecuteMsg {
+    pub update_salary: Option<u128>,
+    pub update_vesting_schedule: Option<u16>,
+    pub update_performance_bonus: Option<u8>,
+    pub update_payment_schedule: Option<String>,
+    pub update_healthcare: Option<String>,
+    pub update_retirement_plan: Option<String>,
+    pub update_vacation_policy: Option<String>,
+    pub update_professional_development: Option<u128>,
+    pub update_pre_existing_ip: Option<String>,
+    pub update_developed_ip: Option<String>,
+    pub update_confidentiality: Option<String>,
+    pub update_non_compete: Option<String>,
+    pub update_ethical_standards: Option<String>,
+    pub update_voluntary_termination: Option<String>,
+    pub update_involuntary_termination: Option<String>,
+    pub update_equity_forfeiture: Option<String>,
+    pub update_relocation_assistance: Option<u128>,
+    pub update_legal_disputes: Option<String>,
+    pub update_contract_renewal: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct QueryMsg {
+    pub employee_details: bool,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct EmployeeDetails {
+    pub employee_name: String,
+    pub base_salary: u128,
+    pub ppu_equity: u8,
+    pub vesting_months: u16,
+    pub performance_bonus: u8,
+    pub initial_payment: u128,
+    pub payment_schedule: String,
+    pub healthcare: String,
+    pub retirement_plan: String,
+    pub vacation_policy: String,
+    pub professional_development: u128,
+    pub pre_existing_ip: String,
+    pub developed_ip: String,
+    pub confidentiality: String,
+    pub non_compete: String,
+    pub ethical_standards: String,
+    pub voluntary_termination: String,
+    pub involuntary_termination: String,
+    pub equity_forfeiture: String,
+    pub relocation_assistance: u128,
+    pub legal_disputes: String,
+    pub contract_renewal: String,
+}
+
+pub fn instantiate(
+    deps: DepsMut,
+    _env: Env,
+    _info: MessageInfo,
+    msg: InstantiateMsg,
+) -> StdResult<Response> {
+    let employee = EmployeeDetails {
+        employee_name: msg.employee_name,
+        base_salary: msg.base_salary,
+        ppu_equity: msg.ppu_equity,
+        vesting_months: msg.vesting_months,
+        performance_bonus: msg.performance_bonus,
+        initial_payment: msg.initial_payment,
+        payment_schedule: msg.payment_schedule,
+        healthcare: msg.healthcare,
+        retirement_plan: msg.retirement_plan,
+        vacation_policy: msg.vacation_policy,
+        professional_development: msg.professional_development,
+        pre_existing_ip: msg.pre_existing_ip,
+        developed_ip: msg.developed_ip,
+        confidentiality: msg.confidentiality,
+        non_compete: msg.non_compete,
+        ethical_standards: msg.ethical_standards,
+        voluntary_termination: msg.voluntary_termination,
+        involuntary_termination: msg.involuntary_termination,
+        equity_forfeiture: msg.equity_forfeiture,
+        relocation_assistance: msg.relocation_assistance,
+        legal_disputes: msg.legal_disputes,
+        contract_renewal: msg.contract_renewal,
+    };
+
+    deps.storage.set(b"employee_details", &to_binary(&employee)?)?;
+
+    Ok(Response::new().add_attribute("action", "instantiate"))
+}
+
+pub fn execute(
+    deps: DepsMut,
+    _env: Env,
+    _info: MessageInfo,
+    msg: ExecuteMsg,
+) -> StdResult<Response> {
+    let mut details: EmployeeDetails = deps
+        .storage
+        .get(b"employee_details")
+        .ok_or_else(|| StdError::not_found("EmployeeDetails"))?
+        .and_then(|data| bincode::deserialize(&data).map_err(|_| StdError::parse_err("EmployeeDetails", "Invalid data")))?;
+
+    if let Some(new_salary) = msg.update_salary {
+        details.base_salary = new_salary;
+    }
+
+    if let Some(new_vesting) = msg.update_vesting_schedule {
+        details.vesting_months = new_vesting;
+    }
+
+    if let Some(new_performance_bonus) = msg.update_performance_bonus {
+        details.performance_bonus = new_performance_bonus;
+    }
+
+    if let Some(new_payment_schedule) = msg.update_payment_schedule {
+        details.payment_schedule = new_payment_schedule;
+    }
+
+    if let Some(new_healthcare) = msg.update_healthcare {
+        details.healthcare = new_healthcare;
+    }
+
+    if let Some(new_retirement_plan) = msg.update_retirement_plan {
+        details.retirement_plan = new_retirement_plan;
+    }
+
+    if let Some(new_vacation_policy) = msg.update_vacation_policy {
+        details.vacation_policy = new_vacation_policy;
+    }
+
+    if let Some(new_professional_development) = msg.update_professional_development {
+        details.professional_development = new_professional_development;
+    }
+
+    if let Some(new_pre_existing_ip) = msg.update_pre_existing_ip {
+        details.pre_existing_ip = new_pre_existing_ip;
+    }
+
+    if let Some(new_developed_ip) = msg.update_developed_ip {
+        details.developed_ip = new_developed_ip;
+    }
+
+    if let Some(new_confidentiality) = msg.update_confidentiality {
+        details.confidentiality = new_confidentiality;
+    }
+
+    if let Some(new_non_compete) = msg.update_non_compete {
+        details.non_compete = new_non_compete;
+    }
+
+    if let Some(new_ethical_standards) = msg.update_ethical_standards {
+        details.ethical_standards = new_ethical_standards;
+    }
+
+    if let Some(new_voluntary_termination) = msg.update_voluntary_termination {
+        details.voluntary_termination = new_voluntary_termination;
+    }
+
+    if let Some(new_involuntary_termination) = msg.update_involuntary_termination {
+        details.involuntary_termination = new_involuntary_termination;
+    }
+
+    if let Some(new_equity_forfeiture) = msg.update_equity_forfeiture {
+        details.equity_forfeiture = new_equity_forfeiture;
+    }
+
+    if let Some(new_relocation_assistance) = msg.update_relocation_assistance {
+        details.relocation_assistance = new_relocation_assistance;
+    }
+
+    if let Some(new_legal_disputes) = msg.update_legal_disputes {
+        details.legal_disputes = new_legal_disputes;
+    }
+
+    if let Some(new_contract_renewal) = msg.update_contract_renewal {
+        details.contract_renewal = new_contract_renewal;
+    }
+
+    deps.storage.set(b"employee_details", &to_binary(&details)?)?;
+
+    Ok(Response::new().add_attribute("action", "update"))
+}
+
+pub fn query(
+    deps: Deps,
+    _env: Env,
+    msg: QueryMsg,
+) -> StdResult<Binary> {
+    if msg.employee_details {
+        let details: EmployeeDetails = deps
+            .storage
+            .get(b"employee_details")
+            .ok_or_else(|| StdError::not_found("EmployeeDetails"))?
+            .and_then(|data| bincode::deserialize(&data).map_err(|_| StdError::parse_err("EmployeeDetails", "Invalid data")))?;
+
+        return to_binary(&details);
+    }
+
+    Err(StdError::generic_err("Unknown query"))
+}

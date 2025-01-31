@@ -1,33 +1,4 @@
-name: "coderabbitai Workflow"
-
-on:
-  # Run this workflow whenever a pull request is opened
-  pull_request:
-    types:
-      - opened
-
-permissions:
-  contents: write    # Required if you need to edit files/metadata in the repo
-  pull-requests: write
-
-jobs:
-  auto_assign_coderabbitai:
-    name: "Auto-assign coderabbitai"
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Auto-assign coderabbitai as reviewer
-        uses: kentaro-m/auto-assign-action@v2.0.0
-        with:
-          # The built-in token that allows the Action to modify PRs
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
-          # If you want multiple reviewers, separate them with commas
-          reviewers: coderabbitai
-          addReviewers: true
-          addAssignees: falsename: "Mega Combined Workflow"
+name: "Mega Combined Workflow"
 
 ##############################
 # EVENTS / TRIGGERS
@@ -571,28 +542,3 @@ jobs:
       - name: Test
         working-directory: ${{ steps.strings.outputs.build-output-dir }}
         run: ctest --build-config ${{ matrix.build_type }}
-name: Deploy Press Release to Memory Silos
-
-on:
-  push:
-    branches:
-      - main
-    paths:
-      - press_release.json
-
-jobs:
-  deploy-press-release:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-
-      - name: Set up Environment
-        run: sudo apt-get update && sudo apt-get install -y gcc openssl curl
-
-      - name: Make Scripts Executable
-        run: chmod +x *.sh
-
-      - name: Run Deploy Script
-        run: ./Deploy_Press_Release.sh
