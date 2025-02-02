@@ -1,50 +1,59 @@
-#ifndef IO_SOCKET_H
-#define IO_SOCKET_H
+#ifndef UNIFIED_IO_H
+#define UNIFIED_IO_H
 
+#include <libwebsockets.h>
 #include <stddef.h> // For size_t
 
-// Constants
-#define SERVER_IP "127.0.0.1"       // Default server IP
-#define SERVER_PORT 8080            // Default server port
-#define BUFFER_SIZE 1024            // Default buffer size
-#define RETRY_LIMIT 5               // Maximum number of connection retries
+// Buffer and Retry Constants
+#define BUFFER_SIZE 2048
+#define LOG_FILE "io_socket.log"
+#define RETRY_LIMIT 5
 
-// Function Declarations
+// IO Types
+typedef enum {
+    IO_TYPE_TCP,
+    IO_TYPE_WEBSOCKET
+} io_type_t;
 
-/**
- * Logs a message to the log file with a given level and message.
- * @param level The severity level (e.g., "INFO", "ERROR").
- * @param message The message to log.
- */
-void log_message(const char* level, const char* message);
+// Unified IO Structure
+typedef struct {
+    io_type_t type;                // IO type (TCP/WebSocket)
+    int tcp_socket;                // TCP socket descriptor
+    struct lws *websocket;         // WebSocket handle
+    struct lws_context *ws_context; // WebSocket context
+} unified_io_t;
 
-/**
- * Creates an IO socket and connects to the server.
- * Retries with exponential backoff if the connection fails.
- * @return The socket file descriptor on success, or -1 on failure.
- */
-int create_io_socket();
+// IO Configuration Structure
+typedef struct {
+    const char *address; // Address or hostname
+    int port;            // Port number
+    io_type_t type;      // IO type
+} io_config_t;
 
-/**
- * Sends data over the IO socket.
- * @param io_socket The socket file descriptor.
- * @param buffer Pointer to the data to send.
- * @param length The length of the data to send.
- */
-void io_socket_write(int io_socket, const void* buffer, size_t length);
+// Known Configurations Array
+extern io_config_t known_configs[];
+extern int config_count;
 
-/**
- * Receives data from the IO socket.
- * @param io_socket The socket file descriptor.
- * @param buffer Pointer to the buffer where data will be stored.
- * @param buffer_size The size of the buffer.
- */
-void io_socket_read(int io_socket, void* buffer, size_t buffer_size);
+// Logging Utility
+void log_message(const char *level, const char *message);
 
-/**
- * Cleans up and closes the IO socket.
- * @param io_socket The socket file descriptor to close.
- */
-void io_socket_cleanup(int io_socket);
+// TCP/IP Functions
+int init_tcp_socket(const char *ip, int port);
+int tcp_send(int socket, const char *message);
+int tcp_receive(int socket, char *buffer, size_t buffer_size);
 
-#endif // IO_SOCKET_H
+// WebSocket Functions
+struct lws_context *init_websocket_context();
+struct lws *connect_websocket(struct lws_context *ctx, const char *address, int port);
+void websocket_send(struct lws *wsi, const char *message);
+
+// Unified IO Functions
+unified_io_t *init_unified_io(io_config_t *config);
+void send_message(unified_io_t *io, const char *message);
+void receive_message(unified_io_t *io, char *buffer, size_t buffer_size);
+void cleanup_unified_io(unified_io_t *io);
+
+// Dynamic Logic Loop
+unified_io_t *dynamic_io_loop();
+
+#endif // UNIFIED_IO_H

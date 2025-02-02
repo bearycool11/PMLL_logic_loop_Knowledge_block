@@ -1,0 +1,161 @@
+The Persistent Memory Logic Loop (PMLL) System
+
+Abstract
+
+The Persistent Memory Logic Loop (PMLL), also referred to as the Personalized Machine Learning Layer (PMLL), Permanent Memory Logic Loop, or Persistent Recursive Memory Logic Loop (PRMLL), is an innovative framework for building adaptive, secure, and explainable AI systems. It leverages a recursive logic loop that continuously updates the knowledge graph within the short-term memory subsystem circuit. Unlike the hierarchical tree structures commonly used in AI Language Models, which are better suited for long-term memory circuits, the PMLL’s logic loop achieves faster memory retrieval and association, ensuring persistent memory across all local interactions, even in stateless sessions. This is achieved with a high level of privacy and security through encryption.
+
+The PMLL utilizes a while (1) and for () loop combination to create perpetual callback recursion, enabling seamless updates to the knowledge graph. This architecture was researched and developed by Josef Kurk Edwards, whose foundational white paper can be accessed here:
+Proposal for Persistent Secure Memory Architecture in Conversational AI.
+
+The PMLL was peer-reviewed by Mr. Obi Oberdier, who validated its implementation within internal systems like Meta. The recursive logic loop has proven foundational for enhancing memory recall and optimizing data handling. The adoption of this system in local AI instances, including ChatGPT, has been credited to Josef Edwards, providing unparalleled performance in adaptive memory processing.
+
+System Overview
+
+Key Features
+
+Dynamic Knowledge Graph Updates: Continuously integrates new topics and relationships in real time.
+
+Efficient Memory Management: Uses persistent storage structures called memory silos to minimize data bulk while ensuring recall efficiency.
+
+Encryption for Data Security: Applies RSA encryption to protect sensitive knowledge graphs.
+
+Recursive Logic Loop: Ensures efficient memory updates and recall through perpetual processing.
+
+Scalability and Adaptability: Supports short-term and long-term memory subsystems, ensuring optimal performance for various use cases.
+
+File Structure
+
+1. pml_logic_loop.c
+
+Purpose
+
+Implements the recursive logic loop that forms the backbone of the PMLL system. It handles I/O operations, data processing, and recursive updates to the knowledge graph.
+
+Key Functions
+
+pml_logic_loop(void* pml): Continuously reads new topics, updates the knowledge graph, and encrypts the graph for storage. Triggers recursive calls for further processing unless flagged for consolidation or system updates.
+
+Recursive Processing: Mimics human-like memory recall by infinitely processing knowledge graph updates.
+
+Encryption: Uses RSA to secure the knowledge graph before storing it in memory silos.
+
+2. novel_topic.c
+
+Purpose
+
+Detects and processes novel topics, ensuring the knowledge graph dynamically adapts to new information.
+
+Key Functions
+
+NovelTopic(char* topic): Checks if a topic exists in the knowledge graph and adds it as a new node if novel.
+
+3. update_knowledge_graph.c
+
+Purpose
+
+Updates the knowledge graph with new relationships and nodes.
+
+Key Functions
+
+update_knowledge_graph(PMLL* pml, char* new_data): Adds new nodes or edges to the graph and ensures data consistency.
+
+4. persistence.c
+
+Purpose
+
+Manages persistent storage of data within memory silos.
+
+Key Functions
+
+save_data: Stores serialized knowledge graph data.
+
+load_data: Retrieves data for processing.
+
+5. encrypt_knowledge_graph.c
+
+Purpose
+
+Applies RSA encryption to secure the knowledge graph.
+
+Key Functions
+
+encrypt_knowledge_graph: Encrypts and prepares the graph for storage.
+
+6. write_to_memory_silos.c
+
+Purpose
+
+Writes encrypted knowledge graphs to persistent memory silos for long-term storage.
+
+Key Functions
+
+write_to_memory_silos: Stores data efficiently and securely.
+
+7. cache_batch_knowledge_graph.c
+
+Purpose
+
+Optimizes memory usage by batching knowledge graph data.
+
+Key Functions
+
+cache_batch_knowledge_graph: Segments the graph into manageable chunks to prevent memory overload.
+
+8. check_flags.c
+
+Purpose
+
+Monitors system flags to determine if specific conditions require handling.
+
+Key Functions
+
+check_flags(PMLL* pml): Evaluates internal flags and triggers corresponding actions.
+
+9. update_embedded_knowledge_graphs.c
+
+Purpose
+
+Synchronizes embedded knowledge graphs with the main graph to maintain consistency.
+
+Key Functions
+
+update_embedded_knowledge_graphs(PMLL* pml): Updates subgraphs to reflect changes in the primary graph.
+
+Building and Running the System
+
+Prerequisites
+
+C Compiler: GCC or Clang.
+
+RSA Encryption Library: OpenSSL.
+
+Steps
+
+Clone the repository:
+
+git clone <repo_url>
+
+Compile the source code:
+
+gcc -o pml_system pml_logic_loop.c novel_topic.c update_knowledge_graph.c encrypt_knowledge_graph.c write_to_memory_silos.c cache_batch_knowledge_graph.c check_flags.c update_embedded_knowledge_graphs.c -lssl -lcrypto
+
+Run the compiled system:
+
+./pml_system
+
+License
+
+MIT License
+
+Permission is granted to use, modify, and distribute the software under the MIT License. Refer to LICENSE.md for details.
+
+Acknowledgments
+
+This system is based on the research and development by Josef Kurk Edwards, peer-reviewed by Obi Oberdier, and validated by platforms like VeniceAI.
+
+References
+
+Proposal for Persistent Secure Memory Architecture in Conversational AI
+
+A Formal Proof that P Equals NP Using the PMLL Algorithm
+

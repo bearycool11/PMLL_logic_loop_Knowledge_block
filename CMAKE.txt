@@ -1,0 +1,24 @@
+cmake_minimum_required(VERSION 3.10)
+
+# Project name and version
+project(PMLL_Blockchain VERSION 1.0)
+
+# Specify C++ standard
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
+
+# Add executable
+add_executable(pmll_blockchain
+    src/main.cpp
+    src/blockchain.cpp
+    src/transaction.cpp
+    # Add more source files as needed
+)
+
+# Include directories
+target_include_directories(pmll_blockchain PUBLIC
+    ${PROJECT_SOURCE_DIR}/include
+)
+
+# Link libraries if required
+# target_link_libraries(pmll_blockchain PRIVATE some_library)

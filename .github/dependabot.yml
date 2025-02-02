@@ -1,0 +1,31 @@
+version: 2
+updates:
+  # 1. Monitor npm packages (if you're using JavaScript/Node.js)
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # 2. Monitor Python dependencies (if you're using Python)
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # 3. Monitor Docker dependencies (if you're using containers)
+  - package-ecosystem: "docker"
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # 4. Monitor GitHub Actions dependencies (if you're using GitHub workflows)
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: weekly
+
+  # 5. Monitor DevContainers (if you're using VS Code DevContainers)
+  - package-ecosystem: "devcontainers"
+    directory: "/"
+    schedule:
+      interval: weekly

@@ -61,31 +61,95 @@ const char* json_get_string(const cJSON* json_obj, const char* key) {
 }
 
 /**
- * Sets a string value for a key in a cJSON object.
+ * Retrieves a JSON object corresponding to a logic scope.
+ * Supports PMLL, ARLL, and EFLL scopes.
  * @param json_obj The cJSON object.
+ * @param scope The scope to retrieve (e.g., "PMLL", "ARLL", "EFLL").
+ * @return A pointer to the corresponding JSON object or NULL if not found.
+ */
+cJSON* json_get_scope(const cJSON* json_obj, const char* scope) {
+    if (!json_obj || !scope) {
+        fprintf(stderr, "Invalid parameters to json_get_scope.\n");
+        return NULL;
+    }
+
+    cJSON* scope_obj = cJSON_GetObjectItemCaseSensitive(json_obj, scope);
+    if (scope_obj && cJSON_IsObject(scope_obj)) {
+        return scope_obj;
+    }
+
+    fprintf(stderr, "Scope '%s' not found or not a JSON object.\n", scope);
+    return NULL;
+}
+
+/**
+ * Sets a string value for a key in a specific logic scope.
+ * @param json_obj The cJSON object.
+ * @param scope The logic scope (e.g., "PMLL", "ARLL", "EFLL").
  * @param key The key to set.
  * @param value The string value to set.
  * @return 1 on success, 0 on failure.
  */
-int json_set_string(cJSON* json_obj, const char* key, const char* value) {
-    if (!json_obj || !key || !value) {
-        fprintf(stderr, "Invalid parameters to json_set_string.\n");
-        return 0; // Indicate failure
+int json_set_scope_string(cJSON* json_obj, const char* scope, const char* key, const char* value) {
+    if (!json_obj || !scope || !key || !value) {
+        fprintf(stderr, "Invalid parameters to json_set_scope_string.\n");
+        return 0;
     }
 
-    cJSON* item = cJSON_GetObjectItemCaseSensitive(json_obj, key);
-    if (item) {
-        if (cJSON_IsString(item)) {
-            cJSON_SetValuestring(item, value);
-        } else {
-            fprintf(stderr, "Key '%s' exists but is not a string. Overwriting.\n", key);
-            cJSON_ReplaceItemInObject(json_obj, key, cJSON_CreateString(value));
+    cJSON* scope_obj = cJSON_GetObjectItemCaseSensitive(json_obj, scope);
+    if (!scope_obj) {
+        fprintf(stderr, "Scope '%s' not found. Creating a new scope.\n", scope);
+        scope_obj = cJSON_CreateObject();
+        if (!scope_obj) {
+            fprintf(stderr, "Failed to create scope '%s'.\n", scope);
+            return 0;
         }
-    } else {
-        cJSON_AddStringToObject(json_obj, key, value);
+        cJSON_AddItemToObject(json_obj, scope, scope_obj);
     }
 
-    return 1; // Indicate success
+    return json_set_string(scope_obj, key, value);
+}
+
+/**
+ * Deletes a logic scope from a JSON object.
+ * @param json_obj The cJSON object.
+ * @param scope The logic scope to delete (e.g., "PMLL", "ARLL", "EFLL").
+ * @return 1 on success, 0 on failure.
+ */
+int json_delete_scope(cJSON* json_obj, const char* scope) {
+    if (!json_obj || !scope) {
+        fprintf(stderr, "Invalid parameters to json_delete_scope.\n");
+        return 0;
+    }
+
+    cJSON_DeleteItemFromObject(json_obj, scope);
+    fprintf(stderr, "Deleted scope '%s'.\n", scope);
+    return 1;
+}
+
+/**
+ * Validates the structure of a logic scope (e.g., PMLL, ARLL, EFLL).
+ * Ensures required keys exist and have valid types.
+ * @param scope_obj The scope object to validate.
+ * @return 1 if valid, 0 otherwise.
+ */
+int json_validate_scope(const cJSON* scope_obj) {
+    if (!scope_obj || !cJSON_IsObject(scope_obj)) {
+        fprintf(stderr, "Invalid or non-object scope provided for validation.\n");
+        return 0;
+    }
+
+    const char* required_keys[] = {"name", "status", "details"};
+    for (int i = 0; i < sizeof(required_keys) / sizeof(required_keys[0]); i++) {
+        const char* key = required_keys[i];
+        cJSON* item = cJSON_GetObjectItemCaseSensitive(scope_obj, key);
+        if (!item || !cJSON_IsString(item)) {
+            fprintf(stderr, "Validation failed: Key '%s' is missing or invalid.\n", key);
+            return 0;
+        }
+    }
+
+    return 1;
 }
 
 /**

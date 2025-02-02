@@ -1,0 +1,53 @@
+{
+  "engine": {
+    "name": "YMLJSONImageEngine",
+    "version": "1.0.0",
+    "build": {
+      "compiler": "g++",
+      "flags": ["-std=c++20", "-Wall", "-O2"],
+      "output": "engine"
+    },
+    "environment": {
+      "dependencies": [
+        {
+          "name": "clang",
+          "version": ">=14.0.0"
+        },
+        {
+          "name": "gcc",
+          "version": ">=10.0.0"
+        },
+        {
+          "name": "docker.io",
+          "version": ">=20.0.0"
+        },
+        {
+          "name": "python3",
+          "version": ">=3.8.0"
+        }
+      ]
+    },
+    "workflow": {
+      "setup": {
+        "description": "Install dependencies and set up environment",
+        "commands": [
+          "sudo apt-get update",
+          "sudo apt-get install -y clang gcc python3 python3-pip docker.io"
+        ]
+      },
+      "build": {
+        "description": "Compile engine using the specified compiler",
+        "commands": [
+          "g++ engine.cpp -o engine"
+        ]
+      },
+      "test": {
+        "description": "Run unit and integration tests",
+        "commands": [
+          "./engine --test",
+          "python3 integration_tests.py"
+        ]
+      }
+    }
+  }
+}

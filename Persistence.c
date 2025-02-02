@@ -5,9 +5,13 @@
 #include "io_socket.h"
 #include "pml_logic_loop.h"
 #include "memory_silo.h"
+#include "knowledge.h"
+#include "PMLL_ARLL_EFLL.h"
 
-// Global IO socket instance
+// Global structures for managing sessions
 io_socket_t io_socket;
+PMLL_ARLL_EFLL_State session_state;
+Graph *session_graph = NULL; // Knowledge graph for current session
 
 // Function to send knowledge graph data (e.g., metrics)
 void send_graph_node(io_socket_t *io_socket, const char *node_name, pml_metrics_t *metrics) {
@@ -114,16 +118,76 @@ memory_silo_t* load_memory_silo(const char* filename) {
     return memory_silo;
 }
 
-// Main function to demonstrate persistence with socket and PML logic loop
-int main() {
-    // Initialize the IO socket
-    if (io_socket_init_wrapper(&io_socket, "127.0.0.1", 8080) < 0) {
+// Function to initialize session
+void init_session(const char *ip, int port, int max_retries, int feedback_threshold) {
+    if (io_socket_init(&io_socket, ip, port) < 0) {
         fprintf(stderr, "Failed to initialize IO socket\n");
-        return -1;
+        exit(EXIT_FAILURE);
     }
 
-    // Initialize memory silo and PML logic loop
-    memory_silo_t silo = {0}; // Example memory silo
+    pmll_arll_efll_init(&session_state, max_retries, feedback_threshold);
+    session_graph = create_graph(1024); // Assuming create_graph from knowledge.h
+    if (!session_graph) {
+        fprintf(stderr, "Failed to initialize session graph\n");
+        exit(EXIT_FAILURE);
+    }
+}
+
+// Function to process input from chatlog and update knowledge graph
+void process_chatlog(const char *input) {
+    // Tokenize and add to session graph
+    char *token = strtok(strdup(input), " \t\n");
+    while (token) {
+        Node *node = create_node(token, 0);
+        add_node(session_graph, node);
+        token = strtok(NULL, " \t\n");
+    }
+
+    // Process via PML logic loop with new data
+    pml_logic_loop_process_wrapper(&io_socket, NULL); // Assuming NULL silo as we're using session_graph
+}
+
+// Function to reward or penalize based on ARLL logic
+void reward_session(const char *topic, bool is_good) {
+    ARLLRewards rewards = {0, 0};
+    arll_reward_memory(topic, &rewards, is_good);
+    printf("Session %s rewarded: Good/True: %d, False/Good: %d\n", topic, rewards.good_true_rewards, rewards.false_good_rewards);
+}
+
+// Function to judge the validity of the session's knowledge using EFLL
+bool validate_session() {
+    return efll_judge_memory(session_graph);
+}
+
+// Function to save session state
+void save_session_state(const char* filename) {
+    FILE* file = fopen(filename, "wb");
+    if (file == NULL) {
+        perror("Failed to open file for saving session");
+        return;
+    }
+    fwrite(&session_state, sizeof(PMLL_ARLL_EFLL_State), 1, file);
+    fclose(file);
+    printf("Session state saved to %s\n", filename);
+}
+
+// Function to load session state
+void load_session_state(const char* filename) {
+    FILE* file = fopen(filename, "rb");
+    if (file == NULL) {
+        perror("Failed to open file for loading session");
+        return;
+    }
+    fread(&session_state, sizeof(PMLL_ARLL_EFLL_State), 1, file);
+    fclose(file);
+    printf("Session state loaded from %s\n", filename);
+}
+
+// Main function to demonstrate persistence with socket, PML logic loop, and session management
+int main() {
+    init_session("127.0.0.1", 8080, 5, 3); // Initialize with example parameters
+
+    memory_silo_t silo = {0}; // Example memory silo for additional processing
     pml_logic_loop_init_wrapper(&io_socket, silo.id);
 
     // Load previous state from files if needed
@@ -133,19 +197,13 @@ int main() {
         free(loaded_memory_silo); // Free after use
     }
 
-    // Main loop for processing
-    int iterations = 0;
-    while (iterations < 5) { // Example limited loop
-        printf("Processing iteration %d\n", iterations + 1);
-        pml_logic_loop_process_wrapper(&io_socket, &silo);
-        iterations++;
-    }
+    // Example chatlog session
+    const char *chat_inputs[] = {
+        "Hello, how are you?",
+        "I'm doing well, thanks for asking!",
+        "What's the weather like today?",
+        "It's sunny and warm."
+    };
+    size_t num_inputs = sizeof(chat_inputs) / sizeof(chat_inputs[0]);
 
-    // Save memory silo state before exiting
-    save_memory_silo("memory_silo_state.dat", &silo);
-
-    // Clean up and close the socket
-    io_socket_cleanup(&io_socket);
-
-    return 0;
-}
+    for (size_t i = 

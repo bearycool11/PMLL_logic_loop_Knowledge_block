@@ -1,3 +1,70 @@
+// io_socket.h
+#ifndef IO_SOCKET_H
+#define IO_SOCKET_H
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define BUFFER_SIZE 1024
+
+// Function prototypes
+int create_io_socket(const char* ip, int port);
+void io_socket_write(int socket_fd, const char* data, size_t size);
+void io_socket_read(int socket_fd, char* buffer, size_t size);
+void io_socket_cleanup(int socket_fd);
+
+#endif // IO_SOCKET_H
+
+// io_socket.c
+#include "io_socket.h"
+
+int create_io_socket(const char* ip, int port) {
+    int socket_fd = socket(AF_INET, SOCK_STREAM, 0);
+    if (socket_fd < 0) {
+        perror("Socket creation failed");
+        return -1;
+    }
+
+    struct sockaddr_in server_addr;
+    memset(&server_addr, 0, sizeof(server_addr));
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = htons(port);
+
+    if (inet_pton(AF_INET, ip, &server_addr.sin_addr) <= 0) {
+        perror("Invalid address");
+        close(socket_fd);
+        return -1;
+    }
+
+    if (connect(socket_fd, (struct sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
+        perror("Connection failed");
+        close(socket_fd);
+        return -1;
+    }
+
+    return socket_fd;
+}
+
+void io_socket_write(int socket_fd, const char* data, size_t size) {
+    if (write(socket_fd, data, size) < 0) {
+        perror("Socket write failed");
+    }
+}
+
+void io_socket_read(int socket_fd, char* buffer, size_t size) {
+    if (read(socket_fd, buffer, size) < 0) {
+        perror("Socket read failed");
+    }
+}
+
+void io_socket_cleanup(int socket_fd) {
+    close(socket_fd);
+}
+
+// memory_assoc.c
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -98,7 +165,7 @@ void add_relationship(MemoryAssoc* memory_assoc, const char* entity1, const char
             node2 = memory_assoc->graph->nodes[i];
         }
     }
-    
+
     // Create nodes if they don't exist
     if (!node1) {
         node1 = create_node(entity1, 0);

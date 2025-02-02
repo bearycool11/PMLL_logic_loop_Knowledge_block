@@ -9,18 +9,35 @@
 
 #define CLIENT_ID "Ov23li5l71lKLE8kYTIc"
 #define CLIENT_SECRET "7b4626c63b6b939b9b14680b32ab01ec231cf2e2"
-#define REPO_OWNER "bearycool11"
+#define REPO_OWNER "OpenAI, Josef Edwards, Andrew Ng, Fei Fei Li"
 #define REPO_NAME "pmll"
-#define API_URL "127.0.0.1" // Ensure localhost resolves properly
-#define API_PORT 8080
-#define CROSS_TALK_URL "127.0.0.1"
-#define CROSS_TALK_PORT 8081
-#define IO_SOCKET_URL "127.0.0.1"
-#define IO_SOCKET_PORT 8082
-#define LOGIC_LOOP_URL "127.0.0.1"
-#define LOGIC_LOOP_PORT 8083
-#define PML_LOGIC_LOOP_URL "127.0.0.1"
-#define PML_LOGIC_LOOP_PORT 8084
+
+// Default server configuration
+#define DEFAULT_API_URL "127.0.0.1"
+#define DEFAULT_API_PORT 8080
+
+// Dynamic API endpoints and ports
+const char* endpoints[] = {
+    "VECTOR_MATRIX",
+    "MEMORY_SILO",
+    "IO_SOCKET",
+    "LOGIC_LOOP",
+    "PML_LOGIC_LOOP",
+    "ARLL",
+    "EFLL"
+};
+
+const int ports[] = {
+    8080, // VECTOR_MATRIX
+    8081, // MEMORY_SILO
+    8082, // IO_SOCKET
+    8083, // LOGIC_LOOP
+    8084, // PML_LOGIC_LOOP
+    8085, // ARLL
+    8086  // EFLL
+};
+
+#define NUM_ENDPOINTS (sizeof(endpoints) / sizeof(endpoints[0]))
 
 // Function to create a new socket
 int create_socket() {
@@ -52,12 +69,43 @@ void connect_to_server(int sockfd, struct sockaddr_in* server_addr) {
     }
 }
 
+// Function to handle dynamic API connections
+void handle_dynamic_api_connections() {
+    struct sockaddr_in server_addr;
+    int sockfd;
+
+    for (int i = 0; i < NUM_ENDPOINTS; i++) {
+        printf("Connecting to %s on port %d...\n", endpoints[i], ports[i]);
+        sockfd = create_socket();
+        set_up_server_address(&server_addr, DEFAULT_API_URL, ports[i]);
+        connect_to_server(sockfd, &server_addr);
+
+        // Send a basic request
+        const char* request = "API_CONNECTION_TEST\n";
+        if (send(sockfd, request, strlen(request), 0) < 0) {
+            perror("Failed to send request");
+        } else {
+            printf("Request sent to %s successfully.\n", endpoints[i]);
+        }
+
+        // Receive a response
+        char response[1024];
+        if (recv(sockfd, response, sizeof(response), 0) < 0) {
+            perror("Failed to receive response");
+        } else {
+            printf("Response from %s: %s\n", endpoints[i], response);
+        }
+
+        // Close the socket
+        close(sockfd);
+    }
+}
+
 // Function to perform vector matrix operations
 void handle_vector_matrix_operations() {
     int rows = 3, cols = 3;
     int values[] = {1, 2, 3, 4, 5, 6, 7, 8, 9};
 
-    // Initialize and populate the vector matrix
     vector_matrix_t* matrix = init_vector_matrix(rows, cols);
     if (!matrix) {
         fprintf(stderr, "Failed to initialize vector matrix\n");
@@ -78,14 +126,12 @@ void handle_vector_matrix_operations() {
         printf("\n");
     }
 
-    // Perform polynomial-time operations using the vector matrix logic
     if (pmll_vector_matrix_process(matrix) != 0) {
         fprintf(stderr, "Vector matrix processing failed\n");
         free_vector_matrix(matrix);
         exit(EXIT_FAILURE);
     }
 
-    // Clean up
     free_vector_matrix(matrix);
 }
 
@@ -128,76 +174,20 @@ void make_post_request(const char* url, const char* data) {
 }
 
 int main() {
-    int api_sockfd, cross_talk_sockfd, io_socket_sockfd, logic_loop_sockfd, pml_logic_loop_sockfd;
-    struct sockaddr_in api_server_addr, cross_talk_server_addr, io_socket_server_addr, logic_loop_server_addr, pml_logic_loop_server_addr;
-
-    // Perform vector matrix operations
     printf("Performing vector matrix operations...\n");
     handle_vector_matrix_operations();
 
-    // Create and connect to API server
-    api_sockfd = create_socket();
-    set_up_server_address(&api_server_addr, API_URL, API_PORT);
-    connect_to_server(api_sockfd, &api_server_addr);
+    printf("Handling dynamic API connections...\n");
+    handle_dynamic_api_connections();
 
-    // Create and connect to Cross-Talk server
-    cross_talk_sockfd = create_socket();
-    set_up_server_address(&cross_talk_server_addr, CROSS_TALK_URL, CROSS_TALK_PORT);
-    connect_to_server(cross_talk_sockfd, &cross_talk_server_addr);
-
-    // Create and connect to IO Socket server
-    io_socket_sockfd = create_socket();
-    set_up_server_address(&io_socket_server_addr, IO_SOCKET_URL, IO_SOCKET_PORT);
-    connect_to_server(io_socket_sockfd, &io_socket_server_addr);
-
-    // Create and connect to Logic Loop server
-    logic_loop_sockfd = create_socket();
-    set_up_server_address(&logic_loop_server_addr, LOGIC_LOOP_URL, LOGIC_LOOP_PORT);
-    connect_to_server(logic_loop_sockfd, &logic_loop_server_addr);
-
-    // Create and connect to PML Logic Loop server
-    pml_logic_loop_sockfd = create_socket();
-    set_up_server_address(&pml_logic_loop_server_addr, PML_LOGIC_LOOP_URL, PML_LOGIC_LOOP_PORT);
-    connect_to_server(pml_logic_loop_sockfd, &pml_logic_loop_server_addr);
-
-    // Make a GET request to retrieve repository information
     printf("Making a GET request to the GitHub API...\n");
-    const char* get_url = "https://api.github.com/repos/bearycool11/pmll";
+    const char* get_url = "https://api.github.com/repos/OpenAI/pmll";
     make_get_request(get_url);
 
-    // Make a POST request to create a new issue
     printf("Making a POST request to create a new issue...\n");
     const char* post_data = "{\"title\":\"New issue\",\"body\":\"This is a new issue\"}";
-    const char* post_url = "https://api.github.com/repos/bearycool11/pmll/issues";
+    const char* post_url = "https://api.github.com/repos/OpenAI/pmll/issues";
     make_post_request(post_url, post_data);
 
-    // Send a request to the API server
-    const char* request = "GET /api/endpoint HTTP/1.1\r\nHost: localhost:8080\r\n\r\n";
-    if (send(api_sockfd, request, strlen(request), 0) < 0) {
-        perror("Failed to send request to API server");
-    }
-
-    // Receive a response from the API server
-    char response[1024];
-    if (recv(api_sockfd, response, sizeof(response), 0) < 0) {
-        perror("Failed to receive response from API server");
-    } else {
-        printf("API Server Response:\n%s\n", response);
-    }
-
-    // Close all sockets
-    close(api_sockfd);
-    close(cross_talk_sockfd);
-    close(io_socket_sockfd);
-    close(logic_loop_sockfd);
-    close(pml_logic_loop_sockfd);
-
     return 0;
 }
-
-    close(logic_loop_sockfd);
-    close(pml_logic_loop_sockfd);
-
-    return 0;
-}
-

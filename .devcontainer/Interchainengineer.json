@@ -1,0 +1,14 @@
+{
+    "employee_name": "Josef Kurk Edwards",
+    "base_salary": 350000,
+    "equity_percentage": 10,
+    "github_token": "gho_x6ZCl JK LOL NICE TRY",
+    "interchain_responsibilities": [
+        "Maintain GitHub workflows",
+        "Build interchain CI/CD pipelines",
+        "Advise on blockchain integrations",
+        "Lead blockchain protocol innovations"
+    ],
+    "profile_picture": "data:image/png;base64,<Base64_String>",
+    "position": "Chief Blockchain Architect"
+}

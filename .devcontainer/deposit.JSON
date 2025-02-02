@@ -1,0 +1,35 @@
+name: Deploy Smart Contract
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Compile Smart Contract
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      - name: Deploy to Cosmos Network
+        env:
+          WALLET_ADDRESS: ${{ secrets.COSMOS_WALLET_ADDRESS }}
+          PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          # Use gaiad or cosmjs for deployment
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmos.network:26657 --yes
+
+      - name: Execute Contract Test
+        run: |
+          gaiad tx wasm execute <contract_address> '{"deposit":{}}' --amount 1000000uatom --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmos.network:26657 --yes

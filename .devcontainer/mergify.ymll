@@ -1,0 +1,62 @@
+# .mergify.yml
+commands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  rebase:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  squash:
+    conditions:
+      - or:
+          - sender-permission >= reader
+          - sender = {{author}}
+  backport:
+    conditions:
+      - sender-permission >= reader
+  unqueue:
+    conditions:
+      - ""
+      - sender-permission >= reader
+
+pull_request_rules:
+  - name: Make sure PRs are up-to-date before merging with rebase
+    description: Automatically rebases PRs when they are out-of-date with the base branch to avoid semantic conflicts.
+    conditions:
+      - "#commits-behind >= 10"
+    actions:
+      rebase:
+
+  - name: Add a queue label when PR is queued
+    description: Toggles the queue label when a pull request is added to or removed from the merge queue.
+    conditions:
+      - queue-position > 0
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Request review from the team
+    description: Automatically requests a review from the appropriate team when checks are green and no reviews are pending.
+    conditions:
+      - -closed
+      - "#approved-reviews-by = 0"
+      - "#changes-requested-reviews-by = 0"
+      - review-requested != @TEAM_NAME_HERE
+    actions:
+      request_reviews:
+        teams:
+          - TEAM_NAME_HERE
+
+  - name: Automatic merge
+    description: Automatically merges PRs that pass all branch protections and have the `automerge` label.
+    conditions:
+      - label = automerge
+      - check-successful
+    actions:
+      merge:
+        method: squash

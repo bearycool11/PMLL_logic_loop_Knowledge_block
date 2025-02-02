@@ -5,6 +5,8 @@
 #include <curl/curl.h>
 #include <time.h>
 #include <bitcoin/bitcoin.h>  // Include Bitcoin library for signing transactions
+#include "watcher.h"  // Include watcher for monitoring failed login attempts
+#include "coin.h"  // Include coin for Bitcoin transaction handling
 #include "io_socket.h"
 #include "memory_silo.h"
 #include "pml_logic_loop.h"
@@ -175,8 +177,26 @@ void run_custodian() {
     }
     memory_silo_init(silo->io_socket);
 
-    // Step 3: Interact with APIs
+    // Step 3: Start monitoring logs (Watcher Integration)
+    watcher_init();
+    monitor_logs();
+
+    // Step 4: Interact with APIs (LLaMA Integration)
     char llama_response[BUFFER_SIZE] = {0};
     char custom_response[BUFFER_SIZE] = {0};
     interact_with_llama_api("Hello, LLaMA!", llama_response);
-    interact_with_custom_api(llama_response, custom_response p
+    interact_with_custom_api(llama_response, custom_response);
+
+    // Step 5: Handle Bitcoin Transactions (Coin Integration)
+    log_message("INFO", "Processing Bitcoin transaction.");
+    process_bitcoin_payment(BITCOIN_WALLET, 0.1);  // Example: Sending 0.1 BTC
+
+    // Clean up resources
+    io_socket_cleanup(&io_socket);
+    free(silo);
+}
+
+int main() {
+    run_custodian();
+    return 0;
+}

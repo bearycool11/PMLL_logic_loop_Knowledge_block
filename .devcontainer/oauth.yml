@@ -1,0 +1,463 @@
+{
+    "contract": {
+        "name": "JKEdwards_Employment_Contract",
+        "version": 1.0,
+        "description": "Employment contract for Josef Kurk Edwards integrating GitHub OAuth for automation.",
+        "wallets": {
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+        },
+        "github_token": "NICE TRY HACKER LOL"
+    },
+    "employee_details": {
+        "name": "Josef Kurk Edwards",
+        "title": "Principal Architect",
+        "address": "6389 W Appomattox Ln, Homosassa, FL 34448",
+        "dob": "June 11, 1995"
+    },
+    "compensation": {
+        "base_salary": 300000,
+        "token_compensation": {
+            "amount": 50000,
+            "currency": "ATOM",
+            "vesting": {
+                "total_months": 48,
+                "cliff_months": 12
+            }
+        }
+    },
+    "benefits": {
+        "healthcare": "Comprehensive medical, dental, and vision"
+    },
+    "termination_clauses": {
+        "voluntary": "30-day notice required"
+    }
+}
+
+{
+    "contract": {
+        "name": "JKEdwards_Employment_Contract",
+        "version": 1.0,
+        "description": "Employment contract for Josef Kurk Edwards integrating GitHub OAuth for automation.",
+        "wallets": {
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+        },
+        "github_token": "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"
+    },
+    "employee_details": {
+        "name": "Josef Kurk Edwards",
+        "title": "Principal Architect",
+        "address": "6389 W Appomattox Ln, Homosassa, FL 34448",
+        "dob": "June 11, 1995"
+    },
+    "compensation": {
+        "base_salary": 300000,
+        "token_compensation": {
+            "amount": 50000,
+            "currency": "ATOM",
+            "vesting": {
+                "total_months": 48,
+                "cliff_months": 12
+            }
+        }
+    },
+    "benefits": {
+        "healthcare": "Comprehensive medical, dental, and vision"
+    },
+    "termination_clauses": {
+        "voluntary": "30-day notice required"
+    }
+}
+
+name: Bearycool Employment Contract Automation
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering of this workflow
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  deploy-contract:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      - name: Compile Smart Contract
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      - name: Instantiate Contract
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "${{ secrets.GITHUB_TOKEN }}",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+  automate-github:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Use GitHub Token
+        run: |
+          curl -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/user/bearycool11
+
+name: OAuth Integration Workflow
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  integrate-oauth:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set up Environment
+        run: |
+          echo "Setting up environment variables..."
+
+      - name: Test OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+
+      - name: Compile Smart Contract
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      - name: Instantiate Contract with OAuth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "$GITHUB_TOKEN",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+  test-automation:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Verify OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/bearycool11
+
+name: Bearycool Employment Contract and OAuth Integration
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch: # Allows manual triggering of the workflow
+
+env:
+  CONTRACT_NAME: "JKEdwards_Employment_Contract"
+  WALLET_ADDRESS: "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+
+jobs:
+  deploy-and-integrate:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Check out the repository
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Rust environment for smart contract compilation
+      - name: Set up Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: wasm32-unknown-unknown
+
+      # Step 3: Compile the CosmWasm smart contract
+      - name: Compile Smart Contract
+        run: |
+          cargo build --release --target wasm32-unknown-unknown
+          mv target/wasm32-unknown-unknown/release/contract.wasm ./contract.wasm
+
+      # Step 4: Deploy the compiled smart contract to the Cosmos blockchain
+      - name: Deploy Smart Contract
+        env:
+          COSMOS_PRIVATE_KEY: ${{ secrets.COSMOS_PRIVATE_KEY }}
+        run: |
+          gaiad tx wasm store contract.wasm --from $WALLET_ADDRESS --gas auto --fees 2000uatom --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+          CODE_ID=$(gaiad query wasm list-code --output json | jq -r '.code_infos[-1].code_id')
+          echo "CODE_ID=${CODE_ID}" >> $GITHUB_ENV
+
+      # Step 5: Instantiate the contract with secure OAuth token integration
+      - name: Instantiate Contract with OAuth
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gaiad tx wasm instantiate $CODE_ID '{
+            "github_token": "$GITHUB_TOKEN",
+            "employee_name": "Josef Kurk Edwards",
+            "base_salary": 300000,
+            "ppu_equity": 10,
+            "vesting_months": 48,
+            "performance_bonus": 20,
+            "healthcare": "Comprehensive medical, dental, and vision",
+            "pto_policy": "Unlimited PTO policy and 18 days annually",
+            "retirement_plan": "401(k) with 5% company match",
+            "professional_stipend": 10000,
+            "bitcoin_wallet": "35eNZo1A2RTWKkiFVCjxJeYdhUCVBSVL4d",
+            "cosmos_wallet": "cosmos1erfvxk96wdjcure56lx5awqulhy3fk3vnwg0rd"
+          }' --from $WALLET_ADDRESS --chain-id cosmoshub-4 --node https://rpc.cosmoshub-4.io --yes
+
+      # Step 6: Validate OAuth token and test integration with GitHub API
+      - name: Verify OAuth Token
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/user
+
+      # Step 7: Confirm OAuth token validity for the user account
+      - name: Confirm GitHub User Access
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          curl -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/users/bearycool11
+
+commands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  rebase:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  squash:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  backport:
+    conditions:
+      - sender-permission >= writer
+  unqueue:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+
+pull_request_rules:
+  - name: Ensure PRs are up-to-date before merging
+    description: Automatically rebase PRs when they are out-of-date with the base branch.
+    conditions:
+      - "#commits-behind >= 1"
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      rebase:
+
+  - name: Assign Reviews to Senior Engineering Team
+    description: Assign PRs to senior engineering team members for approval.
+    conditions:
+      - -open
+      - "#approved-reviews-by = 1"
+      - "#changes-requested-reviews-by = 1"
+      - review-requested != @senior-engineering
+    actions:
+      request_reviews:
+        teams:
+          - senior-engineering
+
+  - name: Assign Reviews to IBC Engineers
+    description: Assign PRs to the IBC team for technical and protocol analysis.
+    conditions:
+      - label = protocol-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - ibc-team
+
+  - name: Assign Marketing Reviews
+    description: Assign marketing-related PRs to the Marketing and MarComms teams.
+    conditions:
+      - label = marketing
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - marketing
+          - marcomms
+
+  - name: Request Community Review
+    description: Ensure community team reviews specific documentation PRs.
+    conditions:
+      - label = community-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - community-team
+
+  - name: Automatic Merge
+    description: Merge PRs when all conditions are met, including label `automerge`.
+    conditions:
+      - label = automerge
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      merge:
+
+  - name: Toggle Merge Queue Label
+    description: Add or remove `merge-queued` label when a PR is queued.
+    conditions:
+      - queue-position > 0
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Include Dr. Aditya and Dr. J.K. Edwards for Key Engineering Reviews
+    description: Notify and request approvals from Dr. Aditya Sri Pal and Dr. J.K. Edwards for high-priority PRs.
+    conditions:
+      - label = high-priority
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrAdityaSriPal
+          - DrJKEdwards
+
+  - name: Senior Advisor Involvement for Protocol Evolution
+    description: Ensure Dr. Fei Fei Li, Dr. Andrew Ng, and Dr. Elon Musk are involved in significant changes.
+    conditions:
+      - label = protocol-evolution
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrFeiFeiLi
+          - DrAndrewNg
+          - ElonMusk
+          - Amy X Zhang 
+
+  - name: Ensure CEO Review for Final Merges
+    description: Request Sam Altman's approval for final merges with critical tags.
+    conditions:
+      - label = final-merge
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - SamAltman
+
+  - name: Operations Team Engagement
+    description: Notify operations team for budget-related changes.
+    conditions:
+      - label = operations
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - operations
+
+  - name: OpenAI Team Review for AI Protocols
+    description: Assign OpenAI team for changes tagged with `ai-protocol`.
+    conditions:
+      - label = ai-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - openai-team
+
+  - name: Interchain.io Review for Inter-Protocol Adjustments
+    description: Assign Interchain.io team for changes requiring inter-protocol review.
+    conditions:
+      - label = inter-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - interchain-team

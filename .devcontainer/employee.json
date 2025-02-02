@@ -1,0 +1,11 @@
+{
+    "employee_name": "Josef Kurk Edwards",
+    "base_salary": 300000,
+    "equity_percentage": 10,
+    "github_token": "OWO WHAT'S THIS NOT FOR YOU LOL",
+    "interchain_responsibilities": [
+        "Maintain GitHub workflows",
+        "Build interchain CI/CD pipelines",
+        "Advise on blockchain integrations"
+    ]
+}

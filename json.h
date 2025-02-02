@@ -1,47 +1,79 @@
 #ifndef JSON_H
 #define JSON_H
 
-#include <stddef.h> // For size_t
+#include "cJSON.h" // Dependency for JSON handling
 
-// Forward declaration for the cJSON structure
-typedef struct cJSON cJSON;
+// Function Prototypes
 
 /**
- * Parses a JSON string and returns a JSON object.
- * @param json_str The JSON string to parse.
- * @return A pointer to the parsed JSON object, or NULL on failure.
- *         The caller is responsible for freeing the returned object with `json_delete`.
+ * Parses a JSON string into a cJSON object.
+ * @param json_str The input JSON string.
+ * @return A pointer to the parsed cJSON object or NULL on error.
  */
 cJSON* json_parse(const char* json_str);
 
 /**
- * Converts a JSON object to a formatted string.
- * @param json_obj The JSON object to stringify.
- * @return A newly allocated string representation of the JSON object.
- *         The caller is responsible for freeing the string using `free()`.
+ * Converts a cJSON object into a JSON string.
+ * @param json_obj The input cJSON object.
+ * @return A JSON string or NULL on error. Must be freed by the caller.
  */
 char* json_stringify(const cJSON* json_obj);
 
 /**
- * Retrieves a string value from a JSON object.
- * @param json_obj The JSON object to query.
- * @param key The key to look up.
- * @return The string value associated with the key, or NULL if not found or not a string.
+ * Retrieves the value of a string from a cJSON object by key.
+ * @param json_obj The cJSON object.
+ * @param key The key to retrieve.
+ * @return The string value or NULL if the key is not found or not a string.
  */
 const char* json_get_string(const cJSON* json_obj, const char* key);
 
 /**
- * Adds or updates a key-value pair in a JSON object.
- * @param json_obj The JSON object to modify.
- * @param key The key to add or update.
- * @param value The string value to associate with the key.
+ * Sets a string value for a key in a cJSON object.
+ * @param json_obj The cJSON object.
+ * @param key The key to set.
+ * @param value The string value to set.
  * @return 1 on success, 0 on failure.
  */
 int json_set_string(cJSON* json_obj, const char* key, const char* value);
 
 /**
- * Deletes a JSON object and frees its memory.
- * @param json_obj The JSON object to delete.
+ * Retrieves a JSON object corresponding to a logic scope.
+ * Supports PMLL, ARLL, and EFLL scopes.
+ * @param json_obj The cJSON object.
+ * @param scope The scope to retrieve (e.g., "PMLL", "ARLL", "EFLL").
+ * @return A pointer to the corresponding JSON object or NULL if not found.
+ */
+cJSON* json_get_scope(const cJSON* json_obj, const char* scope);
+
+/**
+ * Sets a string value for a key in a specific logic scope.
+ * @param json_obj The cJSON object.
+ * @param scope The logic scope (e.g., "PMLL", "ARLL", "EFLL").
+ * @param key The key to set.
+ * @param value The string value to set.
+ * @return 1 on success, 0 on failure.
+ */
+int json_set_scope_string(cJSON* json_obj, const char* scope, const char* key, const char* value);
+
+/**
+ * Deletes a logic scope from a JSON object.
+ * @param json_obj The cJSON object.
+ * @param scope The logic scope to delete (e.g., "PMLL", "ARLL", "EFLL").
+ * @return 1 on success, 0 on failure.
+ */
+int json_delete_scope(cJSON* json_obj, const char* scope);
+
+/**
+ * Validates the structure of a logic scope (e.g., PMLL, ARLL, EFLL).
+ * Ensures required keys exist and have valid types.
+ * @param scope_obj The scope object to validate.
+ * @return 1 if valid, 0 otherwise.
+ */
+int json_validate_scope(const cJSON* scope_obj);
+
+/**
+ * Deletes a cJSON object.
+ * @param json_obj The cJSON object to delete.
  */
 void json_delete(cJSON* json_obj);
 

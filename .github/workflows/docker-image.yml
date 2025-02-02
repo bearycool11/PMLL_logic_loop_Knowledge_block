@@ -1,0 +1,189 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag my-image-name:$(date +%s)
+
+ommands_restrictions:
+  update:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  rebase:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  squash:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+  backport:
+    conditions:
+      - sender-permission >= writer
+  unqueue:
+    conditions:
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+
+pull_request_rules:
+  - name: Ensure PRs are up-to-date before merging
+    description: Automatically rebase PRs when they are out-of-date with the base branch.
+    conditions:
+      - "#commits-behind >= 1"
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      rebase:
+
+  - name: Assign Reviews to Senior Engineering Team
+    description: Assign PRs to senior engineering team members for approval.
+    conditions:
+      - -open
+      - "#approved-reviews-by = 1"
+      - "#changes-requested-reviews-by = 1"
+      - review-requested != @senior-engineering
+    actions:
+      request_reviews:
+        teams:
+          - senior-engineering
+
+  - name: Assign Reviews to IBC Engineers
+    description: Assign PRs to the IBC team for technical and protocol analysis.
+    conditions:
+      - label = protocol-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - ibc-team
+
+  - name: Assign Marketing Reviews
+    description: Assign marketing-related PRs to the Marketing and MarComms teams.
+    conditions:
+      - label = marketing
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - marketing
+          - marcomms
+
+  - name: Request Community Review
+    description: Ensure community team reviews specific documentation PRs.
+    conditions:
+      - label = community-review
+      - -closed
+      - "#approved-reviews-by = 1"
+    actions:
+      request_reviews:
+        teams:
+          - community-team
+
+  - name: Automatic Merge
+    description: Merge PRs when all conditions are met, including label `automerge`.
+    conditions:
+      - label = automerge
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      merge:
+
+  - name: Toggle Merge Queue Label
+    description: Add or remove `merge-queued` label when a PR is queued.
+    conditions:
+      - queue-position > 0
+      - or:
+          - sender = bearycool11
+          - sender-permission >= writer
+    actions:
+      label:
+        toggle:
+          - merge-queued
+
+  - name: Include Dr. Aditya and Dr. J.K. Edwards for Key Engineering Reviews
+    description: Notify and request approvals from Dr. Aditya Sri Pal and Dr. J.K. Edwards for high-priority PRs.
+    conditions:
+      - label = high-priority
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrAdityaSriPal
+          - DrJKEdwards
+
+  - name: Senior Advisor Involvement for Protocol Evolution
+    description: Ensure Dr. Fei Fei Li, Dr. Andrew Ng, and Dr. Elon Musk are involved in significant changes.
+    conditions:
+      - label = protocol-evolution
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - DrFeiFeiLi
+          - DrAndrewNg
+          - ElonMusk
+          - Amy X Zhang 
+
+  - name: Ensure CEO Review for Final Merges
+    description: Request Sam Altman's approval for final merges with critical tags.
+    conditions:
+      - label = final-merge
+      - -closed
+      - "#approved-reviews-by = 0"
+    actions:
+      request_reviews:
+        users:
+          - SamAltman
+
+  - name: Operations Team Engagement
+    description: Notify operations team for budget-related changes.
+    conditions:
+      - label = operations
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - operations
+
+  - name: OpenAI Team Review for AI Protocols
+    description: Assign OpenAI team for changes tagged with `ai-protocol`.
+    conditions:
+      - label = ai-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - openai-team
+
+  - name: Interchain.io Review for Inter-Protocol Adjustments
+    description: Assign Interchain.io team for changes requiring inter-protocol review.
+    conditions:
+      - label = inter-protocol
+      - -closed
+    actions:
+      request_reviews:
+        teams:
+          - interchain-team

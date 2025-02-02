@@ -1,55 +1,124 @@
-#include "json.h"
+#include "free.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void free_c_execute(const char* config_path) {
-    if (!config_path) {
-        fprintf(stderr, "No configuration path provided. Exiting...\n");
-        return;
+// Internal helper functions
+static bool attemptPrimaryFree(void* ptr);
+static bool attemptAlternateFree(void* ptr);
+static void efllErrorHandling(int errorFlag);
+
+/**
+ * Attempts to free memory with PMLL-ARLL-EFLL logic.
+ */
+bool dynamicFree(void* ptr) {
+    if (!ptr) {
+        logFreeError(EFLL_ERROR_NULL_POINTER);
+        efllErrorHandling(EFLL_ERROR_NULL_POINTER);
+        return false;
     }
 
-    // Load JSON configuration
-    printf("Reading configuration from %s...\n", config_path);
-    json_object* config = load_json_from_file(config_path);
+    int retryCount = 0;
+    bool success = false;
 
-    if (!config) {
-        fprintf(stderr, "Failed to load %s. Exiting...\n", config_path);
-        return;
+    // PMLL: Primary Memory Logic Loop
+    while (retryCount < RETRY_LIMIT && !success) {
+        success = attemptPrimaryFree(ptr);
+        if (!success) {
+            retryCount++;
+            logFreeError(EFLL_ERROR_MEMORY_LEAK);
+        }
     }
 
-    // Get the mode from the JSON
-    const char* mode = json_get_string(config, "mode");
-    if (!mode) {
-        fprintf(stderr, "Mode not specified in the configuration file. Exiting...\n");
-        json_delete(config);
-        return;
+    // ARLL: Alternate Retry Logic Loop
+    if (!success) {
+        retryCount = 0;  // Reset retry count
+        while (retryCount < RETRY_LIMIT && !success) {
+            success = attemptAlternateFree(ptr);
+            if (!success) {
+                retryCount++;
+                logFreeError(EFLL_ERROR_DOUBLE_FREE);
+            }
+        }
     }
 
-    printf("Free.c operating in mode: %s\n", mode);
-
-    // Execute specific tasks based on the mode
-    if (strcmp(mode, "cleanup") == 0) {
-        printf("Performing cleanup tasks...\n");
-        // Add cleanup code here
-    } else if (strcmp(mode, "optimize") == 0) {
-        printf("Optimizing resources...\n");
-        // Add optimization code here
-    } else {
-        fprintf(stderr, "Unknown mode: %s. Exiting...\n", mode);
+    // EFLL: Error Flag Logic Loop
+    if (!success) {
+        efllErrorHandling(EFLL_ERROR_MEMORY_LEAK);
+        return false;
     }
 
-    // Clean up the JSON object
-    json_delete(config);
+    return true;
 }
 
-// Example usage
-int main(int argc, char* argv[]) {
-    const char* config_path = "free_config.json";
-    if (argc > 1) {
-        config_path = argv[1]; // Allow user to specify config path
+/**
+ * Attempts primary free logic.
+ */
+static bool attemptPrimaryFree(void* ptr) {
+    if (!ptr) {
+        return false;
     }
-    free_c_execute(config_path);
-    return 0;
+
+    free(ptr);
+    ptr = NULL;  // Nullify pointer after free
+    return true;
 }
 
+/**
+ * Attempts alternate free logic.
+ */
+static bool attemptAlternateFree(void* ptr) {
+    if (!ptr) {
+        return false;
+    }
+
+    // Alternate cleanup mechanism (e.g., custom allocators, backup systems)
+    memset(ptr, 0, sizeof(ptr));  // Clear memory as a fallback
+    free(ptr);
+    ptr = NULL;
+    return true;
+}
+
+/**
+ * Logs errors encountered during the free process.
+ */
+void logFreeError(int errorFlag) {
+    const char* errorMessage;
+
+    switch (errorFlag) {
+        case EFLL_ERROR_MEMORY_LEAK:
+            errorMessage = "Memory leak detected.";
+            break;
+        case EFLL_ERROR_DOUBLE_FREE:
+            errorMessage = "Double free attempt detected.";
+            break;
+        case EFLL_ERROR_NULL_POINTER:
+            errorMessage = "Null pointer passed to free.";
+            break;
+        default:
+            errorMessage = "Unknown error during free.";
+            break;
+    }
+
+    fprintf(stderr, "Error: %s\n", errorMessage);
+}
+
+/**
+ * Handles errors based on EFLL logic.
+ */
+static void efllErrorHandling(int errorFlag) {
+    switch (errorFlag) {
+        case EFLL_ERROR_MEMORY_LEAK:
+            fprintf(stderr, "Fatal: Unable to resolve memory leak after retries.\n");
+            exit(EXIT_FAILURE);
+        case EFLL_ERROR_DOUBLE_FREE:
+            fprintf(stderr, "Fatal: Double free detected. Investigate memory logic.\n");
+            exit(EXIT_FAILURE);
+        case EFLL_ERROR_NULL_POINTER:
+            fprintf(stderr, "Warning: Null pointer encountered. Skipping free.\n");
+            break;
+        default:
+            fprintf(stderr, "Unknown error encountered. Debug required.\n");
+            exit(EXIT_FAILURE);
+    }
+}
