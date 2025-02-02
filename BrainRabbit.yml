@@ -46,7 +46,7 @@ jobs:
       # Step 4: Build Modular Brain Components
       - name: Build Modular Brain Components
         run: |
-          gcc brain.c -o modular_brain_executable
+          gcc brainOrgan.c -o modular_brain_executable
           gcc inner_ear.c -o inner_ear_module
           gcc pml_logic_loop.c -o logic_module
 
