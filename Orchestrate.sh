@@ -12,6 +12,7 @@ if [ ! -d "$SCRIPT_DIR" ]; then
 fi
 
 # Define paths dynamically based on SCRIPT_DIR
+
 LOG_DIR="$SCRIPT_DIR/logs"
 BUILD_LOG="$LOG_DIR/build.log"
 ORCHESTRA_LOG="$LOG_DIR/orchestra.log"
