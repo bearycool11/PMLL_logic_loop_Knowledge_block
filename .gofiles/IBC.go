@@ -3262,6 +3262,3 @@ func (suite *KeeperTestSuite) TestWriteErrorReceipt() {
 			upgradeError = types.NewUpgradeError(10, types.ErrInvalidUpgrade)
 
 			tc.malleate()
-
-		
-
