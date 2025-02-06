@@ -1,5 +1,5 @@
-from fastapi import FastAPI, Depends, HTTPException
-from pydantic import BaseModel
+from fastapi import FastAPI, Depends, HTTPException # type: ignore
+from pydantic import BaseModel # type: ignore
 import pickle
 from typing import List
 import json
