@@ -102,3 +102,19 @@ async def get_history():
 @app.get("/")
 async def root():
     return {"message": "Welcome to Finn, the Brain of ChatGPT and OpenAI."}
+
+
+updates = {
+    "reports": [
+        {
+            "id": "report_1",
+            "content": "Enhanced security measures implemented in response to FBI alert",
+            "timestamp": "2025-01-02T01:03:00Z"
+        },
+        {
+            "id": "report_2",
+            "content": "Local intelligence suggests possible follow-up threats",
+            "timestamp": "2025-01-02T01:03:00Z"
+        }
+    ]
+}
