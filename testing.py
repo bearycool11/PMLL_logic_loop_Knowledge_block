@@ -16,7 +16,7 @@
 ##* Natural Language Processing (NLP)
 ##* Computer Vision
 ##* Robotics
-
+#!/usr/bin/env python3
 ## API Reference
 #The PMLL API is designed to be easy to use and flexible. Here are some examples:
 __package__= "pml"
@@ -26,11 +26,13 @@ import pml # type: ignore
 xml.init();
 pml.train();
 pml.predict();
-#!/usr/bin/env python3
+
 
 # We'll use a global list as an in-memory store,
 # though in production, you'd use a proper database or external storage.
-GLOBAL_PERSISTENT_CONTEXT = []
+GLOBAL_PERSISTENT_CONTEXT = [+xml.init()  
++pml.train()  
++pml.predict()  ]
 
 def persistent_memory_logic_loop(input_data: str) -> str:
     """
