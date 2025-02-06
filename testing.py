@@ -19,15 +19,51 @@
 
 ## API Reference
 #The PMLL API is designed to be easy to use and flexible. Here are some examples:
+__package__= "pml"
+import xml
+import pml # type: ignore
 
-* `pml.init()`: Initializes the PMLL
-* `pml.train()`: Trains the PMLL on a dataset
-* `pml.predict()`: Makes predictions using the PMLL
+xml.init();
+pml.train();
+pml.predict();
+#!/usr/bin/env python3
+
+# We'll use a global list as an in-memory store,
+# though in production, you'd use a proper database or external storage.
+GLOBAL_PERSISTENT_CONTEXT = []
+
+def persistent_memory_logic_loop(input_data: str) -> str:
+    """
+    The hypothetical 'brains' of the persistent memory logic loop.
+    Here, it's just a placeholder that returns a simple message.
+    """
+    return f"PMLL processed: {input_data}"
+
+def PMLL(input_data: str) -> str:
+    """
+    A 'constant' function (in name) for Persistent Memory Logic.
+    This function logs input data into our global store and passes
+    it to the persistent memory logic loop.
+    """
+    # 1. Save the input data to our global context.
+    GLOBAL_PERSISTENT_CONTEXT.append(input_data)
+    
+    # 2. (Optional) Print current context to demonstrate we’re tracking data.
+    print("🚀 ~ Current in-memory context:", GLOBAL_PERSISTENT_CONTEXT)
+    
+    # 3. Call the hypothetical persistent memory logic loop.
+    return persistent_memory_logic_loop(input_data)
+
+# Test run
+if __name__ == "__main__":
+    print("\n===== Running PMLL() Test =====")
+    result = PMLL("Hello, Persistent World!")
+    print("PMLL() returned:", result)
 
 ## Contributing
 ## We welcome contributions to the PMLL repository. Here are some ways to get involved:
 
-# * Fork the repository: `git fork https://github.com/bearycool11/pml.git`
+# * Fork the repository: `git fork https://github.com/bearycool11/pmll_logic_loop_knowledge_base.git'`
  # * Create a new branch: `git checkout -b my-branch`
 # * Make changes: `git add .` and `git commit -m "My changes"`
 # * Pull request: `git push origin my-branch`
