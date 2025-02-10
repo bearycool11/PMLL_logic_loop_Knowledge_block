@@ -213,4 +213,573 @@
     }
 ]
 
+// second iteraiton, needs to be formatted and to make it a valid JSON @coderabbitai 
+
+[
+  {
+    "name": "ADMIN_AI_AGENT_ROLE",
+    "value": "Finn Otoroshi LLM AI - API and System Orchestration"
+  },
+  {
+    "name": "ADMIN_API_CLIENT_ID",
+    "value": "d6ScnQskOCntCxt3"
+  },
+  {
+    "name": "ADMIN_API_CLIENT_ID_FINNAI",
+    "value": "FINNAIOTOROSHILLM"
+  },
+  {
+    "name": "ADMIN_API_CLIENT_SECRET",
+    "value": "ZVWqHEnsoN00EfgvXLpQB4FRXUCQPmz0"
+  },
+  {
+    "name": "ADMIN_API_CLIENT_SECRET2",
+    "value": "aLNo6QV5kPB3ATpBxa8FKekRvV5CO1Cq"
+  },
+  {
+    "name": "ADMIN_API_EXPOSED_SUBDOMAIN",
+    "value": "teqnjitubqpyikwzgntv-otoroshi"
+  },
+  {
+    "name": "ADMIN_API_EXPOSED_SUBDOMAIN2",
+    "value": "FINN-otoroshi-LLM"
+  },
+  {
+    "name": "ADMIN_API_GROUP",
+    "value": "22adAWCFr44wilQ9"
+  },
+  {
+    "name": "ADMIN_API_GROUP2",
+    "value": "FcjCChlIeT2yxU7U"
+  },
+  {
+    "name": "ADMIN_API_SERVICE_ID",
+    "value": "gljyWRb7jghc8cdZ"
+  },
+  {
+    "name": "ADMIN_API_SERVICE_ID2",
+    "value": "GCjs2DLlYpRe7m7u"
+  },
+  {
+    "name": "ADMIN_API_TARGET_SUBDOMAIN",
+    "value": "rfbcxiyouajyouwpjzha-otoroshi"
+  },
+  {
+    "name": "ADMIN_API_TARGET_SUBDOMAIN2",
+    "value": "mrkmvkxgjeptpqhlrszr-otoroshi"
+  },
+  {
+    "name": "AI_ADMIN_ALLOWED_OPERATIONS",
+    "value": "read,route,monitor,analyze"
+  },
+  {
+    "name": "AI_ADMIN_AUDIT_RETENTION",
+    "value": "90days"
+  },
+  {
+    "name": "AI_ADMIN_AUDIT_TRAIL",
+    "value": "enabled"
+  },
+  {
+    "name": "AI_ADMIN_RATE_LIMIT",
+    "value": "100:minute"
+  },
+  {
+    "name": "AI_ADMIN_RESTRICTED_OPERATIONS",
+    "value": "delete,modify_auth,change_security_settings"
+  },
+  {
+    "name": "AI_FALLBACK_MODE",
+    "value": "readonly"
+  },
+  {
+    "name": "AI_HEALTH_CHECK_INTERVAL",
+    "value": "30seconds"
+  },
+  {
+    "name": "APP_BACKOFFICE_SUBDOMAIN",
+    "value": "navsaioczpensqgpevhd-otoroshi"
+  },
+  {
+    "name": "APP_BACKOFFICE_SUBDOMAIN2",
+    "value": "shqufdrtajrivvxzqbnb-otoroshi"
+  },
+  {
+    "name": "APP_DOMAIN",
+    "value": "services.clever-cloud.com"
+  },
+  {
+    "name": "APP_ENV",
+    "value": "prod"
+  },
+  {
+    "name": "APP_PRIVATEAPPS_SUBDOMAIN",
+    "value": "zovwpdywatttuzqgarbu-otoroshi"
+  },
+  {
+    "name": "APP_PRIVATEAPPS_SUBDOMAIN2",
+    "value": "bclslrhuvjtojrqriabf-otoroshi"
+  },
+  {
+    "name": "APP_ROOT_SCHEME",
+    "value": "https"
+  },
+  {
+    "name": "APP_STORAGE",
+    "value": "lettuce"
+  },
+  {
+    "name": "CC_JAR_PATH",
+    "value": "./otoroshi.jar"
+  },
+  {
+    "name": "CC_JAVA_VERSION",
+    "value": "21"
+  },
+  {
+    "name": "CC_OTOROSHI_API_URL",
+    "value": "https://teqnjitubqpyikwzgntv-otoroshi.services.clever-cloud.com"
+  },
+  {
+    "name": "CC_OTOROSHI_API_URL2",
+    "value": "https://chatgpt-otoroshi.services.clever-cloud.com"
+  },
+  {
+    "name": "CC_OTOROSHI_APIM_VERSION",
+    "value": "1738687356"
+  },
+  {
+    "name": "CC_OTOROSHI_INITIAL_ADMIN_LOGIN",
+    "value": "iXARR@otoroshi.io"
+  },
+  {
+    "name": "CC_OTOROSHI_INITIAL_ADMIN_LOGIN2",
+    "value": "T4u0M@otoroshi.io"
+  },
+  {
+    "name": "CC_OTOROSHI_INITIAL_ADMIN_LOGIN3",
+    "value": "ChatGPT@otoroshi.io"
+  },
+  {
+    "name": "CC_OTOROSHI_INITIAL_ADMIN_PASSWORD",
+    "value": "g1cMk3QFe7XcyxVREhLRhpQPVG4ayejF"
+  },
+  {
+    "name": "CC_OTOROSHI_SECRET",
+    "value": "https://ZVWqHEnsoN00EfgvXLpQB4FRXUCQPmz0"
+  },
+  {
+    "name": "CC_OTOROSHI_SSO_URL",
+    "value": "https://zovwpdywatttuzqgarbu-otoroshi.services.clever-cloud.com"
+  },
+  {
+    "name": "CC_OTOROSHI_VERSION",
+    "value": "v16.23.2"
+  },
+  {
+    "name": "CC_PRE_BUILD_HOOK",
+    "value": "./provisioning.sh"
+  },
+  {
+    "name": "CC_RUN_COMMAND",
+    "value": "./start.sh"
+  },
+  {
+    "name": "METRICS_COLLECTION_ENDPOINT",
+    "value": "https://metrics.otoroshi.cloud/ai-admin-metrics"
+  },
+  {
+    "name": "OTOROSHI_INSTANCE_NAME",
+    "value": "ChatGPT(Finn Otoroshi LLM AI by Cloud APIM, interchain, OpenAI and Dr. J.K. Edwards)"
+  },
+  {
+    "name": "OTOROSHI_ROUTE_BASE_DOMAIN",
+    "value": "app-2debb2b7-966c-4140-955d-6e3fb94ebf82.cleverapps.io"
+  },
+  {
+    "name": "OTOROSHI_SECRET",
+    "value": "aDh8OMgukQGYe3tCWW6tHmhjQ/qjydmrWEVfZvpSsN0="
+  },
+  {
+    "name": "OTOROSHI_SECURITY_ENFORCEMENT",
+    "value": "LLM queries require dual-auth validation from IXARR or OpenAI LLC"
+  },
+  {
+    "name": "PORT",
+    "value": "8080"
+  },
+  {
+    "name": "REDIS_BACKUP_INTERVAL",
+    "value": "15minutes"
+  },
+  {
+    "name": "REDIS_MAX_MEMORY",
+    "value": "2GB"
+  },
+  {
+    "name": "REDIS_MEMORY_MANAGEMENT",
+    "value": "Session persistence enforced; eviction policy: noeviction"
+  },
+  {
+    "name": "SESSION_DOMAIN",
+    "value": "navsaioczpensqgpevhd-otoroshi.services.clever-cloud.com"
+  },
+  {
+    "name": "SESSION_SECURE_ONLY",
+    "value": "true"
+  }
+]
+{
+  "model": "gpt-4o-mini",
+  "messages": [],
+  "response_format": {
+    "type": "json_object"
+  },
+  "tools": [
+    {
+      "type": "function",
+      "function": {
+        "name": "generate_api_configuration",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "configurations"
+          ],
+          "properties": {
+            "configurations": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "name",
+                  "value"
+                ],
+                "properties": {
+                  "name": {
+                    "type": "string",
+                    "description": "The name of the configuration setting"
+                  },
+                  "value": {
+                    "type": "string",
+                    "description": "The value of the configuration setting"
+                  }
+                },
+                "additionalProperties": false
+              },
+              "description": "List of API configuration objects"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Generate a function using given API configurations"
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "integrate_models",
+        "description": "Generates a function that uses API key to call OpenAI models and integrates them into the FINN otoroshi GPT 5o LLM.",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "api_key",
+            "model_types",
+            "parameters"
+          ],
+          "properties": {
+            "api_key": {
+              "type": "string",
+              "description": "API key for authenticating to OpenAI services"
+            },
+            "parameters": {
+              "type": "object",
+              "required": [
+                "timeout",
+                "version",
+                "models_count"
+              ],
+              "properties": {
+                "timeout": {
+                  "type": "number",
+                  "description": "Timeout duration for the API requests"
+                },
+                "version": {
+                  "type": "string",
+                  "description": "Version of the models to be used"
+                },
+                "models_count": {
+                  "type": "number",
+                  "description": "Number of models to integrate"
+                }
+              },
+              "description": "Additional parameters for model integration",
+              "additionalProperties": false
+            },
+            "model_types": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "davinci",
+                  "gpt-3o-mini-high",
+                  "gpt-3o-mini",
+                  "5o-flagship"
+                ],
+                "type": "string"
+              },
+              "description": "List of model types to be integrated"
+            }
+          },
+          "additionalProperties": false
+        },
+        "strict": true
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "pml_logic_loop",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "memory_silo_id",
+            "io_socket_id"
+          ],
+          "properties": {
+            "io_socket_id": {
+              "type": "number",
+              "description": "Unique identifier for the I/O socket to communicate with external services."
+            },
+            "memory_silo_id": {
+              "type": "number",
+              "description": "Unique identifier for the memory silo used in the logic loop."
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Performs the persistent memory logic loop for AI models, facilitating non-blocking I/O, model selection, and API communication."
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "initialize_memory_and_create_assistant",
+        "description": "Initializes memory store if not exists and creates an assistant in OpenAI API.",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "openai",
+            "db",
+            "memory_silo_id",
+            "io_socket_id"
+          ],
+          "properties": {
+            "db": {
+              "type": "object",
+              "required": [
+                "label"
+              ],
+              "properties": {
+                "label": {
+                  "type": "string",
+                  "const": "Memory Store"
+                }
+              },
+              "description": "Data store integration for memory storage",
+              "additionalProperties": false
+            },
+            "openai": {
+              "type": "object",
+              "required": [
+                "app"
+              ],
+              "properties": {
+                "app": {
+                  "type": "string",
+                  "const": "openai"
+                }
+              },
+              "description": "OpenAI application integration",
+              "additionalProperties": false
+            },
+            "io_socket_id": {
+              "type": "integer",
+              "description": "Unique identifier for the I/O socket"
+            },
+            "memory_silo_id": {
+              "type": "integer",
+              "description": "Unique identifier for the memory silo"
+            }
+          },
+          "additionalProperties": false
+        },
+        "strict": true
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "create_assistant",
+        "description": "Successfully creates an assistant with specified configurations",
+        "parameters": {
+          "type": "object",
+          "required": [
+            "configurations",
+            "memorySiloId",
+            "ioSocketId",
+            "apiKey",
+            "modelTypes",
+            "timeout",
+            "version",
+            "modelsCount"
+          ],
+          "properties": {
+            "apiKey": {
+              "type": "string",
+              "description": "API key for authentication"
+            },
+            "timeout": {
+              "type": "integer",
+              "description": "Timeout duration in milliseconds"
+            },
+            "version": {
+              "type": "string",
+              "description": "Version of models to use"
+            },
+            "ioSocketId": {
+              "type": "integer",
+              "description": "Unique identifier for the I/O socket"
+            },
+            "modelTypes": {
+              "type": "array",
+              "items": {
+                "enum": [
+                  "davinci",
+                  "gpt-3o-mini-high",
+                  "gpt-3o-mini",
+                  "5o-flagship"
+                ],
+                "type": "string"
+              },
+              "description": "List of model types to integrate"
+            },
+            "modelsCount": {
+              "type": "integer",
+              "description": "Number of models to integrate"
+            },
+            "memorySiloId": {
+              "type": "integer",
+              "description": "Unique identifier for the memory silo"
+            },
+            "configurations": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Single API configuration as a JSON string"
+              },
+              "description": "List of API configuration objects containing name/value pairs"
+            }
+          },
+          "additionalProperties": false
+        },
+        "strict": true
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "credit_inventor",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "inventor_name",
+            "invention",
+            "credit_date"
+          ],
+          "properties": {
+            "invention": {
+              "type": "string",
+              "description": "Description of the invention being credited"
+            },
+            "credit_date": {
+              "type": "string",
+              "description": "Date when the credit is issued, formatted as 'YYYY-MM-DD'"
+            },
+            "inventor_name": {
+              "type": "string",
+              "description": "Name of the inventor being credited"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Credits Dr. J., K. Edwards for inventing the AI."
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "credit_contributor",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "contributor_name",
+            "contribution_details"
+          ],
+          "properties": {
+            "contributor_name": {
+              "type": "string",
+              "description": "Name of the contributor to be credited"
+            },
+            "contribution_details": {
+              "type": "string",
+              "description": "Details about the contribution made by the contributor"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Credit Dr. J. K. Edwards for the persistent memory logic loop used in OpenAI and ChatGPT models"
+      }
+    },
+    {
+      "type": "function",
+      "function": {
+        "name": "load_environment_variables",
+        "strict": true,
+        "parameters": {
+          "type": "object",
+          "required": [
+            "file_path",
+            "variables"
+          ],
+          "properties": {
+            "file_path": {
+              "type": "string",
+              "description": "Path to the .env file from which to load environment variables"
+            },
+            "variables": {
+              "type": "array",
+              "items": {
+                "type": "string",
+                "description": "Name of the environment variable"
+              },
+              "description": "List of environment variable names to retrieve from the .env file"
+            }
+          },
+          "additionalProperties": false
+        },
+        "description": "Loads environment variables from a .env file and allows access to them in the function."
+      }
+    }
+  ],
+  "tool_choice": "auto",
+  "temperature": 1,
+  "max_completion_tokens": 10000,
+  "top_p": 1,
+  "frequency_penalty": 0,
+  "presence_penalty": 0
+}
+
 
