@@ -11,8 +11,8 @@
     "employee_details": {
         "name": "Josef Kurk Edwards",
         "title": "Principal Architect",
-        "address": "6389 W Appomattox Ln, Homosassa, FL 34448",
-        "dob": "June 11, 1995"
+        "address": "[REDACTED]",
+        "dob": "[REDACTED]"
     },
     "compensation": {
         "base_salary": 300000,
@@ -71,5 +71,7 @@
         "duration": "3 years",
         "restrictions": "Employee may not engage in ventures competing with OpenAI or Interchain Inc. for the duration of the non-compete period.\n"
     },
-    "governing_law": "New York"
+    "governing_law": "New York, NY"
 }
+# Add to .gitignore
+.deploy/Contract*.JSON
