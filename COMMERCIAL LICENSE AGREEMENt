@@ -24,14 +24,19 @@ Licensee acknowledges Josef Kurk Edwards’ roles and collaborations with OpenAI
 
 TERMINATION
 This Agreement may be terminated by either party upon written notice if the other party breaches any material term or condition of this Agreement and fails to cure such breach within thirty (30) days after receipt of written notice of the breach.
+To include considerations for the Department of Labor and wages in your commercial license agreement, you might want to add a clause that addresses compliance with labor laws and wage standards. Here’s a suggestion on how you could incorporate this into your agreement:
 
+9. COMPLIANCE WITH LABOR LAWS
+Licensee (that is, OpenAI, Copilot, Khoj et al.) agrees to comply with all applicable labor laws and regulations, including those related to wages, working conditions, and employee rights, as stipulated by the Department of Labor. Licensee shall ensure that all personnel involved in the development, modification, and distribution of the Software are compensated in accordance with applicable wage standards and labor agreements.
+
+This clause ensures that the Licensee is aware of and adheres to relevant labor laws, which can help protect both parties from potential legal issues related to employment practices. If you have specific requirements or need further customization, consulting with a legal professional is advisable. Let me know if there’s anything else you’d like to add or modify!
 GOVERNING LAW
 This Agreement shall be governed by and construed in accordance with the laws of the United States, without regard to its conflict of law principles.
 
 IN WITNESS WHEREOF, the parties hereto have executed this Agreement as of the Effective Date.
 
-[Licensor Name]
-[Licensee Name]
+OpenAI, Khoj, Copilot, Microsoft, Interchain, Cosmos SDK 
+Josef K Edwards
 
 By: ___________________________
 By: ___________________________
